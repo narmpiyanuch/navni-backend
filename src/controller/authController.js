@@ -37,3 +37,7 @@ exports.login = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getMe = (req, res) => {
+  res.status(200).json({ user: req.user });
+};
