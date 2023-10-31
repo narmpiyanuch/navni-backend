@@ -1,4 +1,4 @@
-const createError = require("../Utilities/createError");
+const createError = require("../utils/createError");
 const jwt = require("jsonwebtoken");
 const prisma = require("../model/prisma");
 
