@@ -30,9 +30,7 @@ exports.register = async (req, res, next) => {
         }
 
         if (role === "ADMIN" || role === "DRIVER") {
-            await prisma.employeeInfomation.create({
-                data: infomation,
-            });
+            return res.status(400).json({ message: "Invalid access" });
         }
         const playload = { userId: user.id };
         const accessToken = jwt.sign(
