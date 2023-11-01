@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../model/prisma");
 const createError = require("../utils/createError");
-const { registerSchema, loginSchema } = require("../validator/authValidate");
+const { registerSchema, loginSchema } = require("../validators/authValidate");
 const createAccessToken = require("../utils/createAccessToken");
 
 exports.login = async (req, res, next) => {
