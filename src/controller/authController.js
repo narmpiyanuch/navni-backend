@@ -4,7 +4,7 @@ const prisma = require("../model/prisma");
 const jwt = require("jsonwebtoken");
 const createError = require("../utils/createError");
 const { loginSchema } = require("../../validators/auth-validator");
-const { registerSchema } = require("../validators/authValidate");
+const { registerSchema } = require("../validatetor/authValidate");
 
 exports.login = async (req, res, next) => {
     try {
