@@ -129,15 +129,16 @@ model WorkArea {
 }
 
 model SubAreaStation {
-  id          Int       @id @default(autoincrement())
-  stationName String    @map("station_name")
-  workArea    WorkArea  @relation(fields: [workAreaId], references: [id])
-  latitude    Decimal
-  longitude   Decimal
-  status      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  booking     Booking[]
-  workAreaId  Int
+  id              Int       @id @default(autoincrement())
+  stationName     String    @map("station_name")
+  workArea        WorkArea  @relation(fields: [workAreaId], references: [id])
+  latitude        Decimal
+  longitude       Decimal
+  status          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  pickedUpStation Booking[] @relation("pickedUpStation")
+  dropDownStation Booking[] @relation("dropDownStation")
+  workAreaId      Int
 
   @@map("sub_area_station")
 }
@@ -146,13 +147,15 @@ model Booking {
   id                  Int               @id @default(autoincrement())
   memberInformation   MemberInformation @relation(fields: [memberInformationId], references: [id])
   memberInformationId Int               @map("member_information_id")
-  carInformation      Carinformation    @relation(fields: [carinformationId], references: [id])
-  carinformationId    Int               @map("car_information_id")
-  subAreaStation      SubAreaStation    @relation(fields: [subAreaStationId], references: [id])
-  subAreaStationId    Int               @map("sub_area_station_id")
+  carInformation      Carinformation?   @relation(fields: [carinformationId], references: [id])
+  carinformationId    Int?              @map("car_information_id")
+  pickedUpStation     SubAreaStation    @relation("pickedUpStation", fields: [pickedUpStationId], references: [id])
+  pickedUpStationId   Int               @map("picked_up_station_id")
+  dropDownStation     SubAreaStation    @relation("dropDownStation", fields: [dropDownStationId], references: [id])
+  dropDownStationId   Int               @map("drop_down_station_id")
   passenger           Int
   price               Decimal
-  status              BOOKINGSTATUS
+  status              BOOKINGSTATUS     @default(WAITING)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @default(now())
 

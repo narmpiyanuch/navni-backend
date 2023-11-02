@@ -51,11 +51,13 @@ exports.login = async (req, res, next) => {
                 email: value.email,
             },
         });
+
         if (!user) {
             return next(createError("Invalid Credential", 400));
         }
 
-        const matched = bcrypt.compare(value.password, user.password);
+        const matched = await bcrypt.compare(value.password, user.password);
+
         if (!matched) {
             return next(createError("Invalid Credential", 400));
         }
