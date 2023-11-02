@@ -146,13 +146,13 @@ model Booking {
   id                  Int               @id @default(autoincrement())
   memberInformation   MemberInformation @relation(fields: [memberInformationId], references: [id])
   memberInformationId Int               @map("member_information_id")
-  carInformation      Carinformation    @relation(fields: [carinformationId], references: [id])
-  carinformationId    Int               @map("car_information_id")
+  carInformation      Carinformation?   @relation(fields: [carinformationId], references: [id])
+  carinformationId    Int?              @map("car_information_id")
   subAreaStation      SubAreaStation    @relation(fields: [subAreaStationId], references: [id])
   subAreaStationId    Int               @map("sub_area_station_id")
   passenger           Int
   price               Decimal
-  status              BOOKINGSTATUS
+  status              BOOKINGSTATUS     @default(WAITING)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @default(now())
 
