@@ -4,6 +4,6 @@ const { getUserProfile } = require("../controller/userConroller");
 
 const router = express.Router();
 
-router.use("/", getUserProfile);
+router.get("/", getUserProfile);
 
 module.exports = router;
