@@ -44,11 +44,12 @@ exports.getUserProfile = async (req, res, next) => {
 exports.getHistory = async (req, res, next) => {
   try {
     const allMemberInformation = await memberFunction(req, res);
-    const wallet = await prisma.wallet.findFirst({
+    const history = await prisma.wallet.findFirst({
       where: {
         memberInformationId: allMemberInformation.memberInformation[0].id,
       },
       select: {
+        id: true,
         amount: true,
         transactionIn: {
           select: {
@@ -56,24 +57,26 @@ exports.getHistory = async (req, res, next) => {
             method: true,
             createdAt: true,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
         },
         transactionOut: {
           select: {
             price: true,
             createdAt: true,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
         },
       },
     });
-    console.log(wallet);
+    const data = {
+      id: history.id,
+      amount: history.amount,
+      allTransaction: [
+        ...history.transactionIn,
+        ...history.transactionOut,
+      ].sort((a, b) => b.createdAt - a.createdAt),
+    };
+    console.log(history);
     //console.log("history", history);
-    res.status(200).json(wallet);
+    res.status(200).json(data);
   } catch (error) {
     next(error);
   }
