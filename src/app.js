@@ -5,17 +5,22 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const authRoute = require("./routes/authRoute");
+<<<<<<< HEAD
 const userRoute = require("./routes/userRoute");
 const stripeRoute = require("./routes/stripeRoute");
+=======
+const mapRoute = require('./routes/mapRoute')
+>>>>>>> f31b77adca1f482e1970652f1b0f3bfc6fe39048
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
-const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
+const authenticateMiddleware = require('./middleWare/authenticateMiddleware')
+const userRoute =require('./routes/userRoute')
 
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.static("public"));
 app.use(express.json());
-
+app.use('/map',mapRoute)
 app.use("/auth", authRoute);
 app.use("/user", authenticateMiddleware, userRoute);
 app.use("/stripe", authenticateMiddleware, stripeRoute);
