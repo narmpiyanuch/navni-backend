@@ -6,7 +6,7 @@ const morgan = require("morgan");
 
 const authRoute = require("./routes/authRoute");
 const userRoute = require("./routes/userRoute");
-const stripeRoute = require("./routes/stripeRoute");
+const paymentRoute = require("./routes/paymentRoute");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
@@ -18,7 +18,7 @@ app.use(express.json());
 
 app.use("/auth", authRoute);
 app.use("/user", authenticateMiddleware, userRoute);
-app.use("/stripe", authenticateMiddleware, stripeRoute);
+app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 

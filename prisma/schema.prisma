@@ -62,16 +62,10 @@ model TransactionIn {
   wallet        Wallet   @relation(fields: [walletId], references: [id])
   walletId      Int      @map("wallet_id")
   price         Decimal  @db.Decimal(20, 2)
-  method        METHOD?
   transactionId String   @map("transaction_in")
   createdAt     DateTime @default(now())
 
   @@map("transaction_in")
-}
-
-enum METHOD {
-  QRCODE
-  CREDIT_CARD
 }
 
 model TransactionOut {
@@ -90,10 +84,11 @@ model EmployeeInformation {
   userId        Int              @map("user_id")
   firstName     String           @map("first_name")
   lastName      String           @map("last_name")
-  idCard        String           @map("id_card") @db.VarChar(13)
+  idCard        String           @unique @map("id_card") @db.VarChar(13)
   phoneNumber   String           @map("phone_number") @db.VarChar(10)
   gender        GENDER
   image         String?
+  status        Boolean          @default(true)
   createdAt     DateTime         @default(now())
   carinfomation Carinformation[]
 
