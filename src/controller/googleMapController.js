@@ -12,7 +12,7 @@ exports.getDistance = async (req, res, next) => {
     ];
     // console.log(req.query);
     const map = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${req.query.destinations1}|${req.query.destinations2}|${req.query.destinations3}|${req.query.destinations4}|${req.query.destinations5}&origins=${req.query.origins}&key=AIzaSyAH2nRas0VLgTR-_IxjrCVnpijGpbJcUxI&mode=Driving`
+      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${req.query.destinations1}|${req.query.destinations2}|${req.query.destinations3}|${req.query.destinations4}|${req.query.destinations5}&origins=${req.query.origins}&key=${process.env.GOOGLE_KEY}&mode=Driving`
     );
 
     //  console.log(map)
@@ -79,65 +79,72 @@ exports.addSubArea = async (req, res, next) => {
     const subarea = await prisma.subAreaStation.create({
       data: {
         stationName,
-        latitude:latitude,
-        longitude:longitude,
+        latitude: latitude,
+        longitude: longitude,
         workAreaId: workarea.id,
       },
     });
-    console.log(subarea)
+    console.log(subarea);
     res.status(201).json({ msg: "create area" });
   } catch (error) {
     next(error);
   }
 };
 
-exports.selectArea = async (req,res,next)=>{
+exports.selectArea = async (req, res, next) => {
   try {
-
+    const {
+      body: { id },
+    } = req;
     const origin = await prisma.subAreaStation.findMany({
-      where:{
-        id:6
-      }
-    })
- 
+      where: {
+        id: id,
+      },
+    });
+
     const area = await prisma.subAreaStation.findMany({
-      where:{NOT:{
-        id:6
-      }}
-    })
-    const latlng = area.reduce((acc,data)=>{
-      let input = {}
-      input=`${data.latitude},${data.longitude}`
-      return [...acc,input]
-    },[])
-    
-    const latlngtostring = latlng.join('|')
+      where: {
+        NOT: {
+          id: id,
+        },
+      },
+    });
+    const latlng = area.reduce((acc, data) => {
+      let input = {};
+      input = `${data.latitude},${data.longitude}`;
+      return [...acc, input];
+    }, []);
+
+    const latlngtostring = latlng.join("|");
+
     console.log(latlngtostring)
     const map = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${latlngtostring}&origins=${origin[0].latitude},${origin[0].longitude}&key=AIzaSyAH2nRas0VLgTR-_IxjrCVnpijGpbJcUxI&mode=Driving`
+      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${latlngtostring}&origins=${origin[0].latitude},${origin[0].longitude}&key=${process.env.GOOGLE_KEY}&mode=Driving`
     );
-
-    const data = map.data.rows[0].elements.map((data,index)=>{
-      return [...[],distance=data.distance.text]
-    })
-    console.log(data)
-      // console.log(map.data.rows[0].elements)
+ 
+   
+    const toStation = map.data.rows[0].elements.map((data, index) => {
+      return         { id:area[index].id ,
+         stationName: area[index].stationName ,
+        address :map.data.destination_addresses[index],
+        distance : data.distance.text}
       
-    
-    res.status(200).json({msg:"test"})
+    });
+
+    // console.log(map.data.rows[0].elements)
+
+    res.status(200).json({ toStation });
   } catch (error) {
-    next(error)
+    next(error);
   }
+};
 
-}
-
-exports.getSubArea= async(req,res,next) =>{
+exports.getSubArea = async (req, res, next) => {
   try {
+    const subAreaStation = await prisma.subAreaStation.findMany({});
 
-    const subarea = await prisma.subAreaStation.findMany({})
-    console.log(subarea)
-    res.status(200).json({subarea})
+    res.status(200).json({ subAreaStation });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};

@@ -8,7 +8,8 @@ const authRoute = require("./routes/authRoute");
 const mapRoute = require('./routes/mapRoute')
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
-
+const authenticateMiddleware = require('./middleWare/authenticateMiddleware')
+const userRoute =require('./routes/userRoute')
 
 app.use(cors());
 app.use(morgan("dev"));

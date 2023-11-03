@@ -6,6 +6,6 @@ const router = express.Router()
 router.get('/distance',getDistance)
 router.post('/add',addWorkArea)
 router.post('/add/sub',addSubArea)
-router.post('',selectArea)
+router.post('/select-area',selectArea)
 router.get('/get-subarea',getSubArea)
 module.exports= router
