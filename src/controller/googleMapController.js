@@ -153,8 +153,20 @@ exports.calculate = async (req,res,next)=>{
   try {
     const {body:{destination,origin}}= req
 
+    const dataDestination = await prisma.subAreaStation.findMany({
+      where:{
+        id : destination.id
+      }
+    })
+    // console.log(dataOrigin[0].latitude)
+    const dataOrigin = await prisma.subAreaStation.findMany({
+      where:{
+        id: origin.id
+      }
+    })
+
     const map = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${destination.latitude},${destination.longitude}&origins=${+origin.latitude},${origin.longitude}&key=${process.env.GOOGLE_KEY}&mode=Driving`
+      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${dataDestination[0].latitude},${dataDestination[0].longitude}&origins=${dataOrigin[0].latitude},${dataOrigin[0].longitude}&key=${process.env.GOOGLE_KEY}&mode=Driving`
     );
     distance = map.data.rows[0].elements[0].distance.text.slice(0,-3)
     // console.log(map.data.rows[0].elements[0].distance.text)
