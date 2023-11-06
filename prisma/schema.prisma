@@ -86,6 +86,8 @@ model RegisterEmployeeInformation {
   phoneNumber String   @map("phone_number") @db.VarChar(10)
   gender      GENDER
   image       String?
+  email       String?  @unique
+  password    String?
   createdAt   DateTime @default(now())
 
   @@map("RegisterEmployee_Information")
