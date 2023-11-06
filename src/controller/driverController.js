@@ -9,7 +9,9 @@ const { registerDriverSchema } = require("../validators/driverValidate");
 exports.registerDiver = async (req, res, next) => {
     try {
 
-        const { value, error } = registerDriverSchema.validate(req.body);
+        const newData = JSON.parse(req.body.driverData)
+
+        const { value, error } = registerDriverSchema.validate(newData);
 
         if (error) {
             console.log(error)
