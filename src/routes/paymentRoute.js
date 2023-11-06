@@ -2,12 +2,14 @@ const express = require("express");
 
 const {
     payment,
-    createTransactionPayment,
+    createTransactionInPayment,
+    createTransactionOut,
 } = require("../controller/paymentController");
 
 const router = express.Router();
 
 router.post("/", payment);
-router.post("/:transactionId", createTransactionPayment);
+router.post("/:transactionId", createTransactionInPayment);
+router.post("/transactionOut", createTransactionOut);
 
 module.exports = router;

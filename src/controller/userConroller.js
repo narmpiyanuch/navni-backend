@@ -1,4 +1,4 @@
-const { date } = require("joi");
+// const { date } = require("joi");
 const prisma = require("../model/prisma");
 
 exports.memberFunction = async (req, res) => {
@@ -76,78 +76,76 @@ exports.getHistory = async (req, res, next) => {
                 ...history.transactionOut,
             ].sort((a, b) => b.createdAt - a.createdAt),
         };
-        console.log(history);
-        //console.log("history", history);
         res.status(200).json(data);
     } catch (error) {
         next(error);
     }
 };
 
-exports.transactionIn = async (req, res, next) => {
-    try {
-        const { price, method, transactionId } = req.body;
-        const allMemberInformation = await memberFunction(req, res);
-        const wallet = await prisma.wallet.findFirst({
-            where: {
-                memberInformationId:
-                    allMemberInformation.memberInformation[0].id,
-            },
-        });
-        const transactionIn = await prisma.transactionIn.create({
-            data: {
-                walletId: wallet.id,
-                price,
-                method,
-                transactionId,
-            },
-        });
-        let totalAmount;
-        if (wallet) {
-            totalAmount = await prisma.wallet.update({
-                where: {
-                    id: wallet.id,
-                },
-                data: {
-                    amount: +transactionIn.price + +wallet.amount,
-                },
-            });
-        }
-        res.status(201).json({ transactionIn });
-    } catch (error) {
-        next(error);
-    }
-};
+// exports.transactionIn = async (req, res, next) => {
+//     try {
+//         const { price, method, transactionId } = req.body;
+//         const allMemberInformation = await memberFunction(req, res);
+//         const wallet = await prisma.wallet.findFirst({
+//             where: {
+//                 memberInformationId:
+//                     allMemberInformation.memberInformation[0].id,
+//             },
+//         });
+//         const transactionIn = await prisma.transactionIn.create({
+//             data: {
+//                 walletId: wallet.id,
+//                 price,
+//                 method,
+//                 transactionId,
+//             },
+//         });
+//         let totalAmount;
+//         if (wallet) {
+//             totalAmount = await prisma.wallet.update({
+//                 where: {
+//                     id: wallet.id,
+//                 },
+//                 data: {
+//                     amount: +transactionIn.price + +wallet.amount,
+//                 },
+//             });
+//         }
+//         res.status(201).json({ transactionIn });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
 
-exports.transactionOut = async (req, res, next) => {
-    try {
-        const { price } = req.body;
-        const allMemberInformation = await memberFunction(req, res);
-        const wallet = await prisma.wallet.findFirst({
-            where: {
-                memberInformationId:
-                    allMemberInformation.memberInformation[0].id,
-            },
-        });
-        const transactionOut = await prisma.transactionOut.create({
-            data: {
-                walletId: wallet.id,
-                price,
-            },
-        });
-        let totalAmount;
-        if (wallet) {
-            totalAmount = await prisma.wallet.update({
-                where: {
-                    id: wallet.id,
-                },
-                data: {
-                    amount: +wallet.amount - +transactionOut.price,
-                },
-            });
-        }
-        res.status(201).json({ transactionOut });
-    } catch (error) {
-        next(error);
-    }
-};
+// exports.transactionOut = async (req, res, next) => {
+//     try {
+//         const { price } = req.body;
+//         const allMemberInformation = await memberFunction(req, res);
+//         const wallet = await prisma.wallet.findFirst({
+//             where: {
+//                 memberInformationId:
+//                     allMemberInformation.memberInformation[0].id,
+//             },
+//         });
+//         const transactionOut = await prisma.transactionOut.create({
+//             data: {
+//                 walletId: wallet.id,
+//                 price,
+//             },
+//         });
+//         let totalAmount;
+//         if (wallet) {
+//             totalAmount = await prisma.wallet.update({
+//                 where: {
+//                     id: wallet.id,
+//                 },
+//                 data: {
+//                     amount: +wallet.amount - +transactionOut.price,
+//                 },
+//             });
+//         }
+//         res.status(201).json({ transactionOut });
+//     } catch (error) {
+//         next(error);
+//     }
+// };

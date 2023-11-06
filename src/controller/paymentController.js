@@ -26,7 +26,7 @@ exports.payment = async (req, res, next) => {
     }
 };
 
-exports.createTransactionPayment = async (req, res, next) => {
+exports.createTransactionInPayment = async (req, res, next) => {
     try {
         const { transactionId } = req.params;
 
@@ -59,6 +59,39 @@ exports.createTransactionPayment = async (req, res, next) => {
             });
         }
         res.status(201).json({ transactionIn });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.createTransactionOut = async (req, res, next) => {
+    try {
+        const { price } = req.body;
+        const allMemberInformation = await memberFunction(req, res);
+        const wallet = await prisma.wallet.findFirst({
+            where: {
+                memberInformationId:
+                    allMemberInformation.memberInformation[0].id,
+            },
+        });
+        const transactionOut = await prisma.transactionOut.create({
+            data: {
+                walletId: wallet.id,
+                price,
+            },
+        });
+        let totalAmount;
+        if (wallet) {
+            totalAmount = await prisma.wallet.update({
+                where: {
+                    id: wallet.id,
+                },
+                data: {
+                    amount: +wallet.amount - +transactionOut.price,
+                },
+            });
+        }
+        res.status(201).json({ transactionOut });
     } catch (error) {
         next(error);
     }
