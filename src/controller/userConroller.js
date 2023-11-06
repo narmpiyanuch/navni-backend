@@ -1,4 +1,3 @@
-// const { date } = require("joi");
 const prisma = require("../model/prisma");
 
 const memberFunction = async (req, res) => {
