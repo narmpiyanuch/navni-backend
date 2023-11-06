@@ -15,14 +15,14 @@ model User {
   email               String?               @unique
   password            String?
   googleId            String?               @map("google_id")
-  role                RLOE                  @default(USER)
+  role                ROLE                  @default(USER)
   memberInformation   MemberInformation[]
   employeeInformation EmployeeInformation[]
 
   @@map("user")
 }
 
-enum RLOE {
+enum ROLE {
   USER
   DRIVER
   ADMIN
@@ -76,6 +76,19 @@ model TransactionOut {
   walletId  Int      @map("wallet_id")
 
   @@map("transaction_out")
+}
+
+model RegisterEmployeeInformation {
+  id          Int      @id @default(autoincrement())
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  idCard      String   @unique @db.VarChar(13)
+  phoneNumber String   @map("phone_number") @db.VarChar(10)
+  gender      GENDER
+  image       String?
+  createdAt   DateTime @default(now())
+
+  @@map("RegisterEmployee_Information")
 }
 
 model EmployeeInformation {
