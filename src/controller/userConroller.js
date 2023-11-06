@@ -1,7 +1,7 @@
 // const { date } = require("joi");
 const prisma = require("../model/prisma");
 
-exports.memberFunction = async (req, res) => {
+const memberFunction = async (req, res) => {
     const userInformation = await prisma.user.findMany({
         where: {
             id: req.user.id,
@@ -18,6 +18,8 @@ exports.memberFunction = async (req, res) => {
 
     return allMemberInformation;
 };
+
+exports.memberFunction = memberFunction;
 
 exports.getUserProfile = async (req, res, next) => {
     try {
@@ -56,7 +58,6 @@ exports.getHistory = async (req, res, next) => {
                 transactionIn: {
                     select: {
                         price: true,
-                        method: true,
                         createdAt: true,
                     },
                 },
@@ -81,71 +82,3 @@ exports.getHistory = async (req, res, next) => {
         next(error);
     }
 };
-
-// exports.transactionIn = async (req, res, next) => {
-//     try {
-//         const { price, method, transactionId } = req.body;
-//         const allMemberInformation = await memberFunction(req, res);
-//         const wallet = await prisma.wallet.findFirst({
-//             where: {
-//                 memberInformationId:
-//                     allMemberInformation.memberInformation[0].id,
-//             },
-//         });
-//         const transactionIn = await prisma.transactionIn.create({
-//             data: {
-//                 walletId: wallet.id,
-//                 price,
-//                 method,
-//                 transactionId,
-//             },
-//         });
-//         let totalAmount;
-//         if (wallet) {
-//             totalAmount = await prisma.wallet.update({
-//                 where: {
-//                     id: wallet.id,
-//                 },
-//                 data: {
-//                     amount: +transactionIn.price + +wallet.amount,
-//                 },
-//             });
-//         }
-//         res.status(201).json({ transactionIn });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-// exports.transactionOut = async (req, res, next) => {
-//     try {
-//         const { price } = req.body;
-//         const allMemberInformation = await memberFunction(req, res);
-//         const wallet = await prisma.wallet.findFirst({
-//             where: {
-//                 memberInformationId:
-//                     allMemberInformation.memberInformation[0].id,
-//             },
-//         });
-//         const transactionOut = await prisma.transactionOut.create({
-//             data: {
-//                 walletId: wallet.id,
-//                 price,
-//             },
-//         });
-//         let totalAmount;
-//         if (wallet) {
-//             totalAmount = await prisma.wallet.update({
-//                 where: {
-//                     id: wallet.id,
-//                 },
-//                 data: {
-//                     amount: +wallet.amount - +transactionOut.price,
-//                 },
-//             });
-//         }
-//         res.status(201).json({ transactionOut });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
