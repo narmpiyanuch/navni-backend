@@ -4,15 +4,17 @@ const prisma = require("../model/prisma");
 const createError = require("../utils/createError");
 const fs = require('fs/promises')
 const { registerDriverSchema } = require("../validators/driverValidate");
+const confirmRegisterDriverEmail = require('../config/confirmRegister')
 
 
-exports.registerDiver = async (req, res, next) => {
+exports.registerDriver = async (req, res, next) => {
     try {
 
-        const newData = JSON.parse(req.body.driverData)
+        // const newData = JSON.parse(req.body.driverData)
 
-        const { value, error } = registerDriverSchema.validate(newData);
+        // const { value, error } = registerDriverSchema.validate(newData);
 
+        const { value, error } = registerDriverSchema.validate(req.body);
         if (error) {
             console.log(error)
             return next(createError("Invalid Register", 400));
@@ -28,6 +30,9 @@ exports.registerDiver = async (req, res, next) => {
                     password: hashPassword,
                 }
             });
+            const emailDriver = driver.email
+            console.log(emailDriver)
+            confirmRegisterDriverEmail(emailDriver)
             delete driver.password;
 
             return res.status(201).json({ driver, message: "Register Driver Successful!" })
@@ -43,6 +48,8 @@ exports.registerDiver = async (req, res, next) => {
                     image: url
                 },
             })
+            const emailDriver = driver.email
+            confirmRegisterDriverEmail(emailDriver)
             delete driver.password;
             return res.status(201).json({ driver, message: "Register Driver Successful!" })
         }
@@ -56,7 +63,7 @@ exports.registerDiver = async (req, res, next) => {
 };
 
 
-exports.getAllRegisterDiver = async (req, res, next) => {
+exports.getAllRegisterDriver = async (req, res, next) => {
 
     try {
         const AllDriver = await prisma.RegisterEmployeeInformation.findMany({})
