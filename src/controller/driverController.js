@@ -10,11 +10,9 @@ const confirmRegisterDriverEmail = require('../config/confirmRegister')
 exports.registerDriver = async (req, res, next) => {
     try {
 
-        // const newData = JSON.parse(req.body.driverData)
+        const newData = JSON.parse(req.body.driverData)
+        const { value, error } = registerDriverSchema.validate(newData);
 
-        // const { value, error } = registerDriverSchema.validate(newData);
-
-        const { value, error } = registerDriverSchema.validate(req.body);
         if (error) {
             console.log(error)
             return next(createError("Invalid Register", 400));
@@ -31,7 +29,7 @@ exports.registerDriver = async (req, res, next) => {
                 }
             });
             const emailDriver = driver.email
-            console.log(emailDriver)
+
             confirmRegisterDriverEmail(emailDriver)
             delete driver.password;
 
