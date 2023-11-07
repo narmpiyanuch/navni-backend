@@ -29,7 +29,6 @@ exports.registerDriver = async (req, res, next) => {
                 }
             });
             const emailDriver = driver.email
-
             confirmRegisterDriverEmail(emailDriver)
             delete driver.password;
 
