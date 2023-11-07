@@ -8,6 +8,7 @@ const authRoute = require("./routes/authRoute");
 const mapRoute = require("./routes/mapRoute");
 const userRoute = require("./routes/userRoute");
 const paymentRoute = require("./routes/paymentRoute");
+const bookingRoute = require("./routes/bookingRoute");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
@@ -20,6 +21,7 @@ app.use("/map", mapRoute);
 app.use("/auth", authRoute);
 app.use("/user", authenticateMiddleware, userRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
+app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
