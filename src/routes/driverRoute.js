@@ -1,12 +1,22 @@
 const express = require("express");
-const { registerDriver, getAllRegisterDriver } = require("../controller/driverController");
+const uploadMiddleware = require("../middleWare/upload");
+const authenticateMiddleware = require("../middleWare/authenticateMiddleware");
+const {
+  registerDriver,
+  getAllRegisterDriver,
+  getDriverHistory,
+  getDriverProfile,
+} = require("../controller/driverController");
 const router = express.Router();
-const uploadMiddleware = require("../middleWare/upload")
 
-router.post("/register",
-    uploadMiddleware.single('image'),
-    registerDriver);
+router.post("/register", uploadMiddleware.single("image"), registerDriver);
 
-router.get("/allregisterdriver", getAllRegisterDriver);
+router.get(
+  "/all-register-driver",
+  authenticateMiddleware,
+  getAllRegisterDriver
+);
+router.get("/profile", authenticateMiddleware, getDriverProfile);
+router.get("/driver-history", authenticateMiddleware, getDriverHistory);
 
 module.exports = router;
