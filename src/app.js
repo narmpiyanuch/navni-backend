@@ -15,7 +15,7 @@ const driverRoute = require("./routes/driverRoute");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
-const { useSocket, regisSocketUser } = require("./socket/socket");
+const { useSocket } = require("./socket/socket");
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -36,9 +36,10 @@ app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
 
+useSocket(io);
+
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
-useSocket(io);
 
 const PORT = process.env.PORT;
 server.listen(PORT, () => console.log(`SERVER RUN IN PORT :${PORT}`));
