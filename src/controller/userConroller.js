@@ -1,149 +1,122 @@
-const { date } = require("joi");
 const prisma = require("../model/prisma");
 
 const memberFunction = async (req, res) => {
-  const userInformation = await prisma.user.findMany({
-    where: {
-      id: req.user.id,
-    },
-    include: {
-      memberInformation: true,
-    },
-  });
-  if (!userInformation) {
-    return res.status(400).json({ message: "user not found" });
-  }
+    const userInformation = await prisma.user.findMany({
+        where: {
+            id: req.user.id,
+        },
+        include: {
+            memberInformation: true,
+        },
+    });
+    if (!userInformation) {
+        return res.status(400).json({ message: "user not found" });
+    }
 
-  const [allMemberInformation] = userInformation;
+    const [allMemberInformation] = userInformation;
 
-  return allMemberInformation;
+    return allMemberInformation;
 };
 
-exports.getUserProfile = async (req, res, next) => {
-  try {
-    const allMemberInformation = await memberFunction(req, res);
-    const wallet = await prisma.wallet.findFirst({
-      where: {
-        memberInformationId: allMemberInformation.memberInformation[0].id,
-      },
-    });
-    const userProfile = [
-      {
-        email: allMemberInformation.email,
-        firstName: allMemberInformation.memberInformation[0].firstName,
-        wallet: wallet.amount,
-      },
-    ];
+exports.memberFunction = memberFunction;
 
-    res.status(200).json(userProfile);
-  } catch (error) {
-    next(error);
-  }
+exports.getUserProfile = async (req, res, next) => {
+    try {
+        const allMemberInformation = await memberFunction(req, res);
+        const wallet = await prisma.wallet.findFirst({
+            where: {
+                memberInformationId:
+                    allMemberInformation.memberInformation[0].id,
+            },
+        });
+        const userProfile = [
+            {
+                email: allMemberInformation.email,
+                firstName: allMemberInformation.memberInformation[0].firstName,
+                lastName: allMemberInformation.memberInformation[0].lastName,
+                phoneNumber:
+                    allMemberInformation.memberInformation[0].phoneNumber,
+                wallet: wallet.amount,
+            },
+        ];
+
+        res.status(200).json(userProfile);
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.getHistory = async (req, res, next) => {
-  try {
-    const allMemberInformation = await memberFunction(req, res);
-    const history = await prisma.wallet.findFirst({
-      where: {
-        memberInformationId: allMemberInformation.memberInformation[0].id,
-      },
-      select: {
-        id: true,
-        amount: true,
-        transactionIn: {
-          select: {
-            price: true,
-            method: true,
-            createdAt: true,
-          },
-        },
-        transactionOut: {
-          select: {
-            price: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
-    const data = {
-      id: history.id,
-      amount: history.amount,
-      allTransaction: [
-        ...history.transactionIn,
-        ...history.transactionOut,
-      ].sort((a, b) => b.createdAt - a.createdAt),
-    };
-    console.log(history);
-    //console.log("history", history);
-    res.status(200).json(data);
-  } catch (error) {
-    next(error);
-  }
+    try {
+        const allMemberInformation = await memberFunction(req, res);
+        const history = await prisma.wallet.findFirst({
+            where: {
+                memberInformationId:
+                    allMemberInformation.memberInformation[0].id,
+            },
+            select: {
+                id: true,
+                amount: true,
+                transactionIn: {
+                    select: {
+                        price: true,
+                        transactionId: true,
+                        createdAt: true,
+                    },
+                },
+                transactionOut: {
+                    select: {
+                        price: true,
+                        createdAt: true,
+                    },
+                },
+            },
+        });
+        const data = {
+            id: history.id,
+            amount: history.amount,
+            allTransaction: [
+                ...history.transactionIn,
+                ...history.transactionOut,
+            ].sort((a, b) => b.createdAt - a.createdAt),
+        };
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.transactionIn = async (req, res, next) => {
-  try {
-    const { price, method, transactionId } = req.body;
-    const allMemberInformation = await memberFunction(req, res);
-    const wallet = await prisma.wallet.findFirst({
-      where: {
-        memberInformationId: allMemberInformation.memberInformation[0].id,
-      },
-    });
-    const transactionIn = await prisma.transactionIn.create({
-      data: {
-        walletId: wallet.id,
-        price,
-        method,
-        transactionId,
-      },
-    });
-    let totalAmount;
-    if (wallet) {
-      totalAmount = await prisma.wallet.update({
-        where: {
-          id: wallet.id,
-        },
-        data: {
-          amount: +transactionIn.price + +wallet.amount,
-        },
-      });
+exports.updateProfile = async (req, res, next) => {
+    try {
+        const { firstName, lastName, phoneNumber } = req.body;
+        const allMemberInformation = await memberFunction(req, res);
+        const profile = await prisma.memberInformation.update({
+            where: {
+                id: +allMemberInformation.memberInformation[0].id,
+            },
+            data: {
+                firstName: firstName,
+                lastName: lastName,
+                phoneNumber: phoneNumber,
+            },
+        });
+        res.status(201).json({ message: "Updated Successfully" });
+    } catch (error) {
+        next(error);
     }
-    res.status(201).json({ transactionIn });
-  } catch (error) {
-    next(error);
-  }
 };
 
-exports.transactionOut = async (req, res, next) => {
-  try {
-    const { price } = req.body;
-    const allMemberInformation = await memberFunction(req, res);
-    const wallet = await prisma.wallet.findFirst({
-      where: {
-        memberInformationId: allMemberInformation.memberInformation[0].id,
-      },
-    });
-    const transactionOut = await prisma.transactionOut.create({
-      data: {
-        walletId: wallet.id,
-        price,
-      },
-    });
-    let totalAmount;
-    if (wallet) {
-      totalAmount = await prisma.wallet.update({
-        where: {
-          id: wallet.id,
-        },
-        data: {
-          amount: +wallet.amount - +transactionOut.price,
-        },
-      });
+exports.getServiceHistory = async (req, res, next) => {
+    try {
+        const allMemberInformation = await memberFunction(req, res);
+        const bookingInformation = await prisma.booking.findFirst({
+            where: {
+                memberInformationId:
+                    allMemberInformation.memberInformation[0].id,
+            },
+        });
+        res.status(200).json({ bookingInformation });
+    } catch (error) {
+        next(error);
     }
-    res.status(201).json({ transactionOut });
-  } catch (error) {
-    next(error);
-  }
 };

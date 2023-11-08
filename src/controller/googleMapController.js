@@ -1,46 +1,46 @@
 const axios = require("axios");
 const prisma = require("../model/prisma");
 
-exports.getDistance = async (req, res, next) => {
-  try {
-    const station = [
-      "โรงพยาบาลทหารผ่านศึก",
-      "โรงพยาบาลพระมงกุฎเกล้า",
-      "โรงพยาบาลราชวิถี",
-      "คิง เพาเวอร์ รางน้ำ",
-      "สวนสันติภาพ",
-    ];
-    // console.log(req.query);
-    const map = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${req.query.destinations1}|${req.query.destinations2}|${req.query.destinations3}|${req.query.destinations4}|${req.query.destinations5}&origins=${req.query.origins}&key=${process.env.GOOGLE_KEY}&mode=Driving`
-    );
+// exports.getDistance = async (req, res, next) => {
+//   try {
+//     const station = [
+//       "โรงพยาบาลทหารผ่านศึก",
+//       "โรงพยาบาลพระมงกุฎเกล้า",
+//       "โรงพยาบาลราชวิถี",
+//       "คิง เพาเวอร์ รางน้ำ",
+//       "สวนสันติภาพ",
+//     ];
+//     // console.log(req.query);
+//     const map = await axios.get(
+//       `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${req.query.destinations1}|${req.query.destinations2}|${req.query.destinations3}|${req.query.destinations4}|${req.query.destinations5}&origins=${req.query.origins}&key=${process.env.GOOGLE_KEY}&mode=Driving`
+//     );
 
-    //  console.log(map)
-    const address = map.data.destination_addresses.reduce((acc, item) => {
-      input = {};
-      input["address"] = item;
-      return [...acc, input];
-    }, []);
-    // console.log(response.data.destination_addresses[0])
-    const distance = map.data.rows[0].elements.reduce((acc, item) => {
-      input = {};
-      input["distance"] = item.distance.text;
-      return [...acc, input];
-    }, []);
+//     //  console.log(map)
+//     const address = map.data.destination_addresses.reduce((acc, item) => {
+//       input = {};
+//       input["address"] = item;
+//       return [...acc, input];
+//     }, []);
+//     // console.log(response.data.destination_addresses[0])
+//     const distance = map.data.rows[0].elements.reduce((acc, item) => {
+//       input = {};
+//       input["distance"] = item.distance.text;
+//       return [...acc, input];
+//     }, []);
 
-    const data = address.map((item, index) => {
-      return [...[], item, distance[index]];
-    });
+//     const data = address.map((item, index) => {
+//       return [...[], item, distance[index]];
+//     });
 
-    // console.log(response.data.rows[0])
+//     // console.log(response.data.rows[0])
 
-    res
-      .status(200)
-      .json({ origin: map.data.origin_addresses, from: data, station });
-  } catch (error) {
-    console.log(error);
-  }
-};
+//     res
+//       .status(200)
+//       .json({ origin: map.data.origin_addresses, from: data, station });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 exports.addWorkArea = async (req, res, next) => {
   try {
@@ -117,7 +117,7 @@ exports.selectArea = async (req, res, next) => {
 
     const latlngtostring = latlng.join("|");
 
-    console.log(latlngtostring)
+  
     const map = await axios.get(
       `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${latlngtostring}&origins=${origin[0].latitude},${origin[0].longitude}&key=${process.env.GOOGLE_KEY}&mode=Driving`
     );
@@ -148,3 +148,35 @@ exports.getSubArea = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.calculate = async (req,res,next)=>{  
+  try {
+    const {body:{destination,origin}}= req
+
+    const dataDestination = await prisma.subAreaStation.findMany({
+      where:{
+        id : destination.id
+      }
+    })
+    // console.log(dataOrigin[0].latitude)
+    const dataOrigin = await prisma.subAreaStation.findMany({
+      where:{
+        id: origin.id
+      }
+    })
+
+    const map = await axios.get(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${dataDestination[0].latitude},${dataDestination[0].longitude}&origins=${dataOrigin[0].latitude},${dataOrigin[0].longitude}&key=${process.env.GOOGLE_KEY}&mode=Driving`
+    );
+    distance = map.data.rows[0].elements[0].distance.text.slice(0,-3)
+    // console.log(map.data.rows[0].elements[0].distance.text)
+    // console.log(distance)
+    const price = 25+ (5* Number(distance))
+
+    // console.log(price)
+    res.status(200).json({price}
+    )
+  } catch (error) {
+    next(error)
+  }
+}

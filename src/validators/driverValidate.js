@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const registerSchema = Joi.object({
+const registerDriverSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string()
         .pattern(/^[a-zA-Z0-9]{8,30}$/)
@@ -12,16 +12,12 @@ const registerSchema = Joi.object({
         .required()
         .strip(),
     firstName: Joi.string().trim().required(),
-    lastName: Joi.string().trim(),
+    lastName: Joi.string().trim().required(),
     phoneNumber: Joi.string().pattern(/^[0-9]{10}$/),
     idCard: Joi.string().pattern(/^[0-9]{13}$/),
+    gender: Joi.string().required(),
+
 }).options({ allowUnknown: true });
 
-exports.registerSchema = registerSchema;
+exports.registerDriverSchema = registerDriverSchema;
 
-const loginSchema = Joi.object({
-    email: Joi.string().trim(),
-    password: Joi.string().trim(),
-}).options({ allowUnknown: true });
-
-exports.loginSchema = loginSchema;

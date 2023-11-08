@@ -3,15 +3,15 @@ const express = require("express");
 const {
   getUserProfile,
   getHistory,
-  transactionIn,
-  transactionOut,
+  updateProfile,
+  getServiceHistory,
 } = require("../controller/userConroller");
 
 const router = express.Router();
 
 router.get("/", getUserProfile);
 router.get("/wallet", getHistory);
-router.post("/transactionIn", transactionIn);
-router.post("/transactionOut", transactionOut);
+router.get("/serviceHistory", getServiceHistory);
+router.patch("/updateProfile", updateProfile);
 
 module.exports = router;

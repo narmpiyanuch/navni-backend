@@ -15,14 +15,14 @@ model User {
   email               String?               @unique
   password            String?
   googleId            String?               @map("google_id")
-  role                RLOE                  @default(USER)
+  role                ROLE                  @default(USER)
   memberInformation   MemberInformation[]
   employeeInformation EmployeeInformation[]
 
   @@map("user")
 }
 
-enum RLOE {
+enum ROLE {
   USER
   DRIVER
   ADMIN
@@ -62,16 +62,10 @@ model TransactionIn {
   wallet        Wallet   @relation(fields: [walletId], references: [id])
   walletId      Int      @map("wallet_id")
   price         Decimal  @db.Decimal(20, 2)
-  method        METHOD?
   transactionId String   @map("transaction_in")
   createdAt     DateTime @default(now())
 
   @@map("transaction_in")
-}
-
-enum METHOD {
-  QRCODE
-  CREDIT_CARD
 }
 
 model TransactionOut {
@@ -84,16 +78,32 @@ model TransactionOut {
   @@map("transaction_out")
 }
 
+model RegisterEmployeeInformation {
+  id          Int      @id @default(autoincrement())
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  idCard      String   @unique @db.VarChar(13)
+  phoneNumber String   @map("phone_number") @db.VarChar(10)
+  gender      GENDER
+  image       String?
+  email       String?  @unique
+  password    String?
+  createdAt   DateTime @default(now())
+
+  @@map("RegisterEmployee_Information")
+}
+
 model EmployeeInformation {
   id            Int              @id @default(autoincrement())
   user          User             @relation(fields: [userId], references: [id])
   userId        Int              @map("user_id")
   firstName     String           @map("first_name")
   lastName      String           @map("last_name")
-  idCard        String           @map("id_card") @db.VarChar(13)
+  idCard        String           @unique @map("id_card") @db.VarChar(13)
   phoneNumber   String           @map("phone_number") @db.VarChar(10)
   gender        GENDER
   image         String?
+  status        Boolean          @default(true)
   createdAt     DateTime         @default(now())
   carinfomation Carinformation[]
 

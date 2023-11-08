@@ -8,35 +8,26 @@ const morgan = require("morgan");
 
 const authRoute = require("./routes/authRoute");
 const mapRoute = require("./routes/mapRoute");
+const userRoute = require("./routes/userRoute");
+const paymentRoute = require("./routes/paymentRoute");
+const bookingRoute = require("./routes/bookingRoute");
+const driverRoute = require("./routes/driverRoute");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
-const userRoute = require("./routes/userRoute");
-
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-  },
-});
 
 app.use(cors());
 app.use(morgan("dev"));
+app.use(express.static("public"));
 app.use(express.json());
-
-io.on("connection", (socket) => {
-  socket.on("chat message", (message) => {
-    io.emit("chat message", message);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("someone has left");
-  });
-});
 
 app.use("/map", mapRoute);
 app.use("/auth", authRoute);
 app.use("/user", authenticateMiddleware, userRoute);
+app.use("/payment", authenticateMiddleware, paymentRoute);
+app.use("/booking", authenticateMiddleware, bookingRoute);
+app.use("/driver", driverRoute);
+
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
