@@ -109,7 +109,7 @@ exports.selectArea = async (req, res, next) => {
 
     const area = await prisma.subAreaStation.findMany({
       where: {
-        status:true,
+        status: true,
         NOT: {
           id: id,
         },
@@ -242,25 +242,128 @@ exports.changeStatus = async (req, res, next) => {
           status: false,
         },
       });
-      res.status(200).json({offArea})
+      res.status(200).json({ offArea });
     }
 
-    if(status===false){
-
-      
+    if (status === false) {
       const onArea = await prisma.subAreaStation.updateMany({
-        where:{
-          id
-        }
-        ,
-        data:{
-          status: true
-        }
-      })
-      
+        where: {
+          id,
+        },
+        data: {
+          status: true,
+        },
+      });
+
       res.status(200).json({ msg: "on Station" });
     }
   } catch (error) {
     next(error);
   }
 };
+
+exports.changeStatusArea = async (req, res, next) => {
+  try {
+    const {
+      body: { workAreaId },
+    } = req;
+
+    const workArea = await prisma.workArea.findUnique({
+      where: {
+        id: workAreaId,
+      },
+    });
+    if (workArea.status === true) {
+      await prisma.workArea.updateMany({
+        where: {
+          id: workAreaId,
+        },
+        data: {
+          status: false,
+        },
+      });
+      // const subArea = await prisma.subAreaStation.updateMany({
+      //   where: {
+      //     workAreaId,
+      //   },
+      //   data: {
+      //     status: false,
+      //   },
+      // });
+   return   res.status(200).json({ msg: "change status complete" });
+    }
+    if (workArea.status === false) {
+      await prisma.workArea.updateMany({
+        where: {
+          id: workAreaId,
+        },
+        data: {
+          status: true,
+        },
+      });
+      // const subArea = await prisma.subAreaStation.updateMany({
+      //   where: {
+      //     workAreaId,
+      //   },
+      //   data: {
+      //     status: true,
+      //   },
+      // });
+    return  res.status(200).json({ msg: "change status complete" });
+    }
+
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteSubArea = async (req,res,next)=>{
+  try {
+
+    const {body:{id}}= req
+    const deleteArea = await prisma.subAreaStation.deleteMany({
+      where:{id}
+    })
+
+    res.status(200).json({msg:"delete complete"})
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.deleteArea = async (req,res,next)=>{
+  try {
+    const {body:{id}}=req
+    
+    const subarea = await prisma.subAreaStation.findMany({
+      where:{
+        workAreaId:id
+      }
+    })
+    if (subarea){
+      const deleteSubArea = await prisma.subAreaStation.deleteMany({
+        where:{
+          workAreaId:id
+        }
+      })
+      
+    const deleteArea = await prisma.workArea.deleteMany({
+      where:{
+        id
+      }
+    })
+    return  res.status(200).json({msg:'Delete Area Complete'})
+    }
+
+    const deleteArea = await prisma.workArea.deleteMany({
+      where:{
+        id
+      }
+    })
+
+    res.status(200).json({msg:'Delete Area Complete'})
+  } catch (error) {
+    next(error)
+  }
+}
