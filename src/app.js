@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const authRoute = require("./routes/authRoute");
 const mapRoute = require("./routes/mapRoute");
 const userRoute = require("./routes/userRoute");
+const adminRoute = require("./routes/adminRoute");
 const paymentRoute = require("./routes/paymentRoute");
 const bookingRoute = require("./routes/bookingRoute");
 const driverRoute = require("./routes/driverRoute");
@@ -25,6 +26,7 @@ app.use("/user", authenticateMiddleware, userRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
+app.use("/admin", authenticateMiddleware, adminRoute);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

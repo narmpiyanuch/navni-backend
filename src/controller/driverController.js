@@ -5,6 +5,7 @@ const createError = require("../utils/createError");
 const { upload } = require("../utils/cloudinary_service");
 const { registerDriverSchema } = require("../validators/driverValidate");
 const confirmRegisterDriverEmail = require("../config/confirmRegister");
+const approveRegisterDriverEmail = require("../config/approveRegister");
 
 const employeeFunction = async (req, res) => {
   const userInformation = await prisma.user.findMany({
@@ -85,6 +86,56 @@ exports.getAllRegisterDriver = async (req, res, next) => {
     res.status(200).json({ AllDriver });
   } catch (err) {
     next(err);
+  }
+};
+
+exports.createDriver = async (req, res, next) => {
+  try {
+    const { id, plateNumber } = req.body;
+    console.log(id, plateNumber);
+    const driver = await prisma.RegisterEmployeeInformation.findFirst({
+      where: {
+        id: +id,
+      },
+    });
+    console.log(driver);
+    const user = await prisma.user.create({
+      data: {
+        email: driver.email,
+        password: driver.password,
+        role: "DRIVER",
+      },
+    });
+    const employee = await prisma.employeeInformation.create({
+      data: {
+        userId: user.id,
+        firstName: driver.firstName,
+        lastName: driver.lastName,
+        idCard: driver.idCard,
+        phoneNumber: driver.phoneNumber,
+        gender: driver.gender,
+        image: driver.image,
+      },
+    });
+    const carInformation = await prisma.carinformation.create({
+      data: {
+        employeeInformationId: employee.id,
+        plateNumber: plateNumber,
+      },
+    });
+
+    const emailDriver = driver.email;
+    approveRegisterDriverEmail(emailDriver);
+
+    await prisma.registerEmployeeInformation.delete({
+      where: {
+        id: +id,
+      },
+    });
+
+    res.status(201).json({ message: "Completed" });
+  } catch (error) {
+    next(error);
   }
 };
 
