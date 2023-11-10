@@ -82,12 +82,34 @@ exports.registerDriver = async (req, res, next) => {
 
 exports.getAllRegisterDriver = async (req, res, next) => {
   try {
-    const AllDriver = await prisma.RegisterEmployeeInformation.findMany({});
-    res.status(200).json({ AllDriver });
+    const allDriver = await prisma.RegisterEmployeeInformation.findMany({});
+    res.status(200).json({ allDriver });
   } catch (err) {
     next(err);
   }
 };
+
+
+exports.getAllDriverEmployee = async (req,res,next) =>{
+  try {
+    const driversEmployee = await prisma.user.findMany({
+      where:{
+        role:"DRIVER"
+      },include:{
+        employeeInformation:{
+          include:{
+            carinfomation:true
+          }
+        },
+  
+      }
+    })
+    res.status(200).json({driversEmployee})
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 exports.createDriver = async (req, res, next) => {
   try {
@@ -142,6 +164,7 @@ exports.createDriver = async (req, res, next) => {
 exports.getDriverProfile = async (req, res, next) => {
   try {
     const allEmployeeInformation = await employeeFunction(req, res);
+    console.log(allEmployeeInformation)
     const carinformation = await prisma.carinformation.findFirst({
       where: {
         employeeInformationId: allEmployeeInformation.employeeInformation[0].id,
@@ -197,3 +220,37 @@ exports.getDriverHistory = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.changeDriverStatus = async (req,res,next) =>{
+  try {
+    const {id,status} = req.body
+   console.log(status)
+    if (status === false) {
+      const active = await prisma.employeeInformation.update({
+        where: {
+          id,
+        },
+        data: {
+          status: false,
+        },
+      });
+      return res.status(200).json({ active });
+    }
+
+    if (status === true) {
+      const inActive = await prisma.employeeInformation.update({
+        where: {
+          id,
+        },
+        data: {
+          status: true,
+        },
+      })
+      return res.status(200).json({ inActive });
+    }
+    res.status(200).json({ msg: "Success" });
+  } catch (error) {
+    next(error)
+  }
+}
