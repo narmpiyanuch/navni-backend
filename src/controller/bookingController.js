@@ -4,7 +4,7 @@ const { memberFunction } = require("../controller/userConroller");
 exports.createBooking = async (req, res, next) => {
   try {
     const {
-      carinformationId,
+      
       pickedUpStationId,
       dropDownStationId,
       passenger,
@@ -15,14 +15,26 @@ exports.createBooking = async (req, res, next) => {
     const booking = await prisma.booking.create({
       data: {
         memberInformationId: allMemberInformation.memberInformation[0].id,
-        carinformationId: +carinformationId,
         pickedUpStationId: +pickedUpStationId,
         dropDownStationId: +dropDownStationId,
         passenger: +passenger,
         price: +price,
       },
+      
     });
-    res.status(201).json({ message: "Booking Sucessfully", booking });
+    const pickup = await prisma.subAreaStation.findUnique({
+      where:{
+        id:booking.pickedUpStationId
+      }
+    })
+
+    const drop = await prisma.subAreaStation.findUnique({
+      where:{
+        id:booking.dropDownStationId
+      }
+    })
+
+    res.status(201).json({ message: "Booking Sucessfully" ,booking,pickup,drop});
   } catch (error) {
     next(error);
   }
