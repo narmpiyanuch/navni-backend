@@ -34,6 +34,9 @@ exports.getServiceHistory = async (req, res, next) => {
     const booking = await prisma.booking.findMany({
       where: {
         memberInformationId: allMemberInformation.memberInformation[0].id,
+        AND: {
+          OR: [{ status: "DONE" }, { status: "CANCEL" }],
+        },
       },
       select: {
         id: true,

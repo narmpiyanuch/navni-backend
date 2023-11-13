@@ -131,6 +131,9 @@ model Carinformation {
 model WorkArea {
   id             Int              @id @default(autoincrement())
   areaName       String           @map("area_name")
+  latitude       Decimal
+  longitude      Decimal
+  radius         Decimal
   status         Boolean          @default(true)
   createdAt      DateTime         @default(now())
   SubAreaStation SubAreaStation[]
