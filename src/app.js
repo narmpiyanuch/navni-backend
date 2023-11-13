@@ -12,10 +12,12 @@ const userRoute = require("./routes/userRoute");
 const paymentRoute = require("./routes/paymentRoute");
 const bookingRoute = require("./routes/bookingRoute");
 const driverRoute = require("./routes/driverRoute");
+const adminRoute = require("./routes/adminRoute");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
-const { useSocket } = require("./socket/socket");
+const checkAdminMiddleware = require("./middleWare/checkAdminMiddleware");
+const { useSocket, testIoMiddleWare } = require("./socket/socket");
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -35,8 +37,10 @@ app.use("/user", authenticateMiddleware, userRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
+app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
 
 useSocket(io);
+testIoMiddleWare(io);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
