@@ -179,7 +179,9 @@ exports.getDriverProfile = async (req, res, next) => {
     const driverProfile = {
       firstName: allEmployeeInformation.employeeInformation[0].firstName,
       image: allEmployeeInformation.employeeInformation[0].image,
+
       plateNumber: carinformation.plateNumber,
+      seats:carinformation.quantity
     };
     res.status(200).json({ driverProfile });
   } catch (error) {
