@@ -1,11 +1,8 @@
 require("dotenv").config();
 const express = require("express");
-const { createServer } = require("http");
 const { Server } = require("socket.io");
 const http = require("http");
 const app = express();
-const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
 const morgan = require("morgan");
 
@@ -16,7 +13,6 @@ const adminRoute = require("./routes/adminRoute");
 const paymentRoute = require("./routes/paymentRoute");
 const bookingRoute = require("./routes/bookingRoute");
 const driverRoute = require("./routes/driverRoute");
-const adminRoute = require("./routes/adminRoute");
 
 const checkAdminMiddleware = require("./middleWare/roleIdentifierMiddleware");
 const errorMiddleware = require("./middleWare/errorMiddleware");
@@ -38,8 +34,6 @@ const io = new Server(server, {
     },
 });
 
-useSocket(io);
-
 app.use("/message", messageRoute);
 app.use("/map", mapRoute);
 app.use("/auth", authRoute);
@@ -49,8 +43,8 @@ app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
 app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
 
-useSocket(io);
-testIoMiddleWare(io);
+// useSocket(io);
+// testIoMiddleWare(io);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
