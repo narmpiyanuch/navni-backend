@@ -35,7 +35,14 @@ exports.registerDriver = async (req, res, next) => {
       console.log(error);
       return next(createError("Invalid Register", 400));
     }
-
+    const findUser = await prisma.user.findFirst({
+      where: {
+        email: value.email,
+      },
+    });
+    if (findUser) {
+      return next(createError("Duplicate Email", 400));
+    }
     const { password, ...information } = value;
     const hashPassword = await bcrypt.hash(password, 12);
 
@@ -89,27 +96,25 @@ exports.getAllRegisterDriver = async (req, res, next) => {
   }
 };
 
-
-exports.getAllDriverEmployee = async (req,res,next) =>{
+exports.getAllDriverEmployee = async (req, res, next) => {
   try {
     const driversEmployee = await prisma.user.findMany({
-      where:{
-        role:"DRIVER"
-      },include:{
-        employeeInformation:{
-          include:{
-            carinfomation:true
-          }
+      where: {
+        role: "DRIVER",
+      },
+      include: {
+        employeeInformation: {
+          include: {
+            carinfomation: true,
+          },
         },
-  
-      }
-    })
-    res.status(200).json({driversEmployee})
+      },
+    });
+    res.status(200).json({ driversEmployee });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
-
+};
 
 exports.createDriver = async (req, res, next) => {
   try {
@@ -120,7 +125,8 @@ exports.createDriver = async (req, res, next) => {
         id: +id,
       },
     });
-    console.log(driver);
+
+    //console.log(driver);
     const user = await prisma.user.create({
       data: {
         email: driver.email,
@@ -164,7 +170,7 @@ exports.createDriver = async (req, res, next) => {
 exports.getDriverProfile = async (req, res, next) => {
   try {
     const allEmployeeInformation = await employeeFunction(req, res);
-    console.log(allEmployeeInformation)
+    console.log(allEmployeeInformation);
     const carinformation = await prisma.carinformation.findFirst({
       where: {
         employeeInformationId: allEmployeeInformation.employeeInformation[0].id,
@@ -223,11 +229,10 @@ exports.getDriverHistory = async (req, res, next) => {
   }
 };
 
-
-exports.changeDriverStatus = async (req,res,next) =>{
+exports.changeDriverStatus = async (req, res, next) => {
   try {
-    const {id,status} = req.body
-   console.log(status)
+    const { id, status } = req.body;
+    console.log(status);
     if (status === false) {
       const active = await prisma.employeeInformation.update({
         where: {
@@ -248,11 +253,11 @@ exports.changeDriverStatus = async (req,res,next) =>{
         data: {
           status: true,
         },
-      })
+      });
       return res.status(200).json({ inActive });
     }
     res.status(200).json({ msg: "Success" });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};

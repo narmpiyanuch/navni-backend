@@ -4,7 +4,6 @@ const router = express.Router();
 
 const { getAllUser } = require("../controller/adminController");
 
-router.get("/get-all-user", getAllUser);
 const {
   getAllRegisterDriver,
   createDriver,
@@ -12,6 +11,7 @@ const {
   changeDriverStatus,
 } = require("../controller/driverController");
 
+router.get("/get-all-user", getAllUser);
 router.get("/all-register-driver", getAllRegisterDriver);
 router.post("/create-driver", createDriver);
 router.get("/all-driver-employee", getAllDriverEmployee);
