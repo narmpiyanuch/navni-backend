@@ -134,6 +134,12 @@ exports.createDriver = async (req, res, next) => {
         role: "DRIVER",
       },
     });
+    await prisma.chatroom.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
     const employee = await prisma.employeeInformation.create({
       data: {
         userId: user.id,
