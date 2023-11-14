@@ -89,27 +89,25 @@ exports.getAllRegisterDriver = async (req, res, next) => {
   }
 };
 
-
-exports.getAllDriverEmployee = async (req,res,next) =>{
+exports.getAllDriverEmployee = async (req, res, next) => {
   try {
     const driversEmployee = await prisma.user.findMany({
-      where:{
-        role:"DRIVER"
-      },include:{
-        employeeInformation:{
-          include:{
-            carinfomation:true
-          }
+      where: {
+        role: "DRIVER",
+      },
+      include: {
+        employeeInformation: {
+          include: {
+            carinfomation: true,
+          },
         },
-  
-      }
-    })
-    res.status(200).json({driversEmployee})
+      },
+    });
+    res.status(200).json({ driversEmployee });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
-
+};
 
 exports.createDriver = async (req, res, next) => {
   try {
@@ -128,6 +126,12 @@ exports.createDriver = async (req, res, next) => {
         role: "DRIVER",
       },
     });
+    await prisma.chatroom.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
     const employee = await prisma.employeeInformation.create({
       data: {
         userId: user.id,
@@ -164,7 +168,7 @@ exports.createDriver = async (req, res, next) => {
 exports.getDriverProfile = async (req, res, next) => {
   try {
     const allEmployeeInformation = await employeeFunction(req, res);
-    console.log(allEmployeeInformation)
+    console.log(allEmployeeInformation);
     const carinformation = await prisma.carinformation.findFirst({
       where: {
         employeeInformationId: allEmployeeInformation.employeeInformation[0].id,
@@ -221,11 +225,10 @@ exports.getDriverHistory = async (req, res, next) => {
   }
 };
 
-
-exports.changeDriverStatus = async (req,res,next) =>{
+exports.changeDriverStatus = async (req, res, next) => {
   try {
-    const {id,status} = req.body
-   console.log(status)
+    const { id, status } = req.body;
+    console.log(status);
     if (status === false) {
       const active = await prisma.employeeInformation.update({
         where: {
@@ -246,11 +249,11 @@ exports.changeDriverStatus = async (req,res,next) =>{
         data: {
           status: true,
         },
-      })
+      });
       return res.status(200).json({ inActive });
     }
     res.status(200).json({ msg: "Success" });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
