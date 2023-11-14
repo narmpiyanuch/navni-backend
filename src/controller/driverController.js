@@ -35,7 +35,14 @@ exports.registerDriver = async (req, res, next) => {
       console.log(error);
       return next(createError("Invalid Register", 400));
     }
-
+    const findUser = await prisma.user.findFirst({
+      where: {
+        email: value.email,
+      },
+    });
+    if (findUser) {
+      return next(createError("Duplicate Email", 400));
+    }
     const { password, ...information } = value;
     const hashPassword = await bcrypt.hash(password, 12);
 
@@ -118,7 +125,8 @@ exports.createDriver = async (req, res, next) => {
         id: +id,
       },
     });
-    console.log(driver);
+
+    //console.log(driver);
     const user = await prisma.user.create({
       data: {
         email: driver.email,
@@ -177,7 +185,9 @@ exports.getDriverProfile = async (req, res, next) => {
     const driverProfile = {
       firstName: allEmployeeInformation.employeeInformation[0].firstName,
       image: allEmployeeInformation.employeeInformation[0].image,
+
       plateNumber: carinformation.plateNumber,
+      seats:carinformation.quantity
     };
     res.status(200).json({ driverProfile });
   } catch (error) {

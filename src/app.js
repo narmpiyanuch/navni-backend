@@ -30,7 +30,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -38,6 +38,8 @@ const io = new Server(server, {
 useSocket(io);
 
 app.use("/auth", authRoute);
+app.use("/map", mapRoute);
+app.use("/message", messageRoute);
 app.use("/user", authenticateMiddleware, userRoute);
 app.use("/message", messageRoute);
 app.use("/map", mapRoute);
