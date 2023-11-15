@@ -85,7 +85,6 @@ exports.cancelBooking = async (req, res, next) => {
         if (bookingItem.status === "PICKED") {
             next(createError("Can't cancel this trip", 400));
         }
-        console.log(bookingItem);
 
         if (
             bookingItem.status === "WAITING" ||
