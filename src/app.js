@@ -29,20 +29,21 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: "*",
         methods: ["GET", "POST"],
     },
 });
 
-app.use("/message", messageRoute);
-app.use("/map", mapRoute);
 app.use("/auth", authRoute);
+app.use("/map", mapRoute);
+app.use("/message", messageRoute);
 app.use("/user", authenticateMiddleware, userRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
 app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
 
+// useSocket(io);
 // useSocket(io);
 // testIoMiddleWare(io);
 
