@@ -15,7 +15,9 @@ exports.createBooking = async (req, res, next) => {
       },
     });
 
-    if (bookingItem) {
+    console.log(bookingItem);
+
+    if (bookingItem[0]) {
       return next(createError("Cant booking trip"));
     }
 
@@ -85,6 +87,7 @@ exports.getServiceHistory = async (req, res, next) => {
 exports.cancelBooking = async (req, res, next) => {
   try {
     const { id } = req.body;
+    console.log(id);
     const bookingItem = await prisma.booking.findUnique({
       where: {
         id,
