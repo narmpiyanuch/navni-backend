@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const { createServer } = require("http");
 const { Server } = require("socket.io");
 const http = require("http");
 const app = express();
@@ -20,7 +19,7 @@ const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
 const authenticateMiddleware = require("./middleWare/authenticateMiddleware");
 const messageRoute = require("./routes/messageRoute");
-const { useSocket } = require("./socket/socket");
+const { useSocket, testIoMiddleWare } = require("./socket/socket");
 
 app.use(cors());
 app.use(morgan("dev"));
@@ -29,13 +28,11 @@ app.use(express.json());
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
 });
-
-useSocket(io);
 
 app.use("/auth", authRoute);
 app.use("/map", mapRoute);
@@ -47,6 +44,10 @@ app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
 app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
+
+// useSocket(io);
+// useSocket(io);
+// testIoMiddleWare(io);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

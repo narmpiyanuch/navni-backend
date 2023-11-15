@@ -6,6 +6,7 @@ const { upload } = require("../utils/cloudinary_service");
 const { registerDriverSchema } = require("../validators/driverValidate");
 const confirmRegisterDriverEmail = require("../config/confirmRegister");
 const approveRegisterDriverEmail = require("../config/approveRegister");
+const { memberFunction } = require("../controller/userConroller");
 
 const employeeFunction = async (req, res) => {
   const userInformation = await prisma.user.findMany({
@@ -119,7 +120,7 @@ exports.getAllDriverEmployee = async (req, res, next) => {
 exports.createDriver = async (req, res, next) => {
   try {
     const { id, plateNumber } = req.body;
-    console.log(id, plateNumber);
+    // console.log(id, plateNumber);
     const driver = await prisma.RegisterEmployeeInformation.findFirst({
       where: {
         id: +id,
@@ -176,7 +177,7 @@ exports.createDriver = async (req, res, next) => {
 exports.getDriverProfile = async (req, res, next) => {
   try {
     const allEmployeeInformation = await employeeFunction(req, res);
-    console.log(allEmployeeInformation);
+    // console.log(allEmployeeInformation);
     const carinformation = await prisma.carinformation.findFirst({
       where: {
         employeeInformationId: allEmployeeInformation.employeeInformation[0].id,
@@ -185,9 +186,8 @@ exports.getDriverProfile = async (req, res, next) => {
     const driverProfile = {
       firstName: allEmployeeInformation.employeeInformation[0].firstName,
       image: allEmployeeInformation.employeeInformation[0].image,
-
       plateNumber: carinformation.plateNumber,
-      seats:carinformation.quantity
+      seats: carinformation.quantity,
     };
     res.status(200).json({ driverProfile });
   } catch (error) {
@@ -238,7 +238,6 @@ exports.getDriverHistory = async (req, res, next) => {
 exports.changeDriverStatus = async (req, res, next) => {
   try {
     const { id, status } = req.body;
-    console.log(status);
     if (status === false) {
       const active = await prisma.employeeInformation.update({
         where: {
@@ -263,6 +262,214 @@ exports.changeDriverStatus = async (req, res, next) => {
       return res.status(200).json({ inActive });
     }
     res.status(200).json({ msg: "Success" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBookingItem = async (req, res, next) => {
+  try {
+    const driver = await employeeFunction(req, res);
+
+    const [carInfomation] = await prisma.carinformation.findMany({
+      where: { employeeInformationId: driver.employeeInformation[0].id },
+    });
+
+    const bookingItem = await prisma.booking.findMany({
+      where: {
+        AND: [
+          {
+            passenger: {
+              lte: carInfomation.quantity,
+            },
+          },
+          { status: "WAITING" },
+        ],
+      },
+      include: {
+        dropDownStation: true,
+        pickedUpStation: true,
+      },
+    });
+    res.status(200).json(bookingItem);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const findBookingItem = async (req, res) => {
+  const { id } = req.body;
+  const bookingItem = await prisma.booking.findUnique({
+    where: {
+      id,
+    },
+  });
+  return bookingItem;
+};
+
+exports.findBookingItem = findBookingItem;
+
+exports.acceptBooking = async (req, res, next) => {
+  try {
+    const driver = await employeeFunction(req, res);
+
+    const bookingItem = await findBookingItem(req, res, next);
+
+    const carInformation = await prisma.carinformation.findFirst({
+      where: {
+        employeeInformationId: driver.employeeInformation[0].id,
+      },
+    });
+
+    if (
+      bookingItem.status !== "WAITING" ||
+      bookingItem.passenger > carInformation.quantity
+    ) {
+      return next(createError("Can't Aceept This Trip"));
+    }
+
+    const newBookingItem = await prisma.booking.update({
+      data: {
+        carinformationId: driver.employeeInformation[0].id,
+        status: "COMING",
+      },
+      where: {
+        id: bookingItem.id,
+      },
+    });
+
+    const newCarInformation = await prisma.carinformation.update({
+      data: {
+        quantity: {
+          decrement: bookingItem.passenger,
+        },
+      },
+      where: {
+        id: driver.employeeInformation[0].id,
+      },
+    });
+
+    res.status(200).json({ newBookingItem, newCarInformation });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.pickupUser = async (req, res, next) => {
+  try {
+    const bookingItem = await findBookingItem(req, res);
+
+    await prisma.booking.update({
+      data: {
+        status: "PICKED",
+      },
+      where: {
+        id: bookingItem.id,
+      },
+    });
+
+    const wallet = await prisma.wallet.findFirst({
+      where: {
+        memberInformationId: bookingItem.memberInformationId,
+      },
+    });
+
+    const transactionOut = await prisma.transactionOut.create({
+      data: {
+        walletId: wallet.id,
+        price: bookingItem.price,
+      },
+    });
+
+    if (wallet) {
+      await prisma.wallet.update({
+        where: {
+          id: wallet.id,
+        },
+        data: {
+          amount: +wallet.amount - +transactionOut.price,
+        },
+      });
+    }
+    res.status(200).json({ message: "pickup success" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.dropOffUser = async (req, res, next) => {
+  try {
+    const bookingItem = await findBookingItem(req, res);
+    const driver = await employeeFunction(req, res);
+
+    await prisma.booking.update({
+      data: {
+        status: "DONE",
+      },
+      where: {
+        id: bookingItem.id,
+      },
+    });
+
+    await prisma.carinformation.update({
+      data: {
+        quantity: {
+          increment: bookingItem.passenger,
+        },
+      },
+      where: {
+        id: driver.employeeInformation[0].id,
+      },
+    });
+    res.status(200).json({ message: "Trip clear" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBookingItemWithComing = async (req, res, next) => {
+  try {
+    const driver = await employeeFunction(req, res);
+
+    const [carInfomation] = await prisma.carinformation.findMany({
+      where: { employeeInformationId: driver.employeeInformation[0].id },
+    });
+
+    const bookingItem = await prisma.booking.findMany({
+      where: {
+        carinformationId: carInfomation.id,
+        status: "COMING",
+      },
+      include: {
+        dropDownStation: true,
+        pickedUpStation: true,
+      },
+    });
+    res.status(200).json(bookingItem);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBookingItemWithPicked = async (req, res, next) => {
+  try {
+    const driver = await employeeFunction(req, res);
+
+    const [carInfomation] = await prisma.carinformation.findMany({
+      where: { employeeInformationId: driver.employeeInformation[0].id },
+    });
+
+    const bookingItem = await prisma.booking.findMany({
+      where: {
+        carinformationId: carInfomation.id,
+        status: "PICKED",
+      },
+      include: {
+        dropDownStation: true,
+        pickedUpStation: true,
+      },
+    });
+    res.status(200).json(bookingItem);
   } catch (error) {
     next(error);
   }

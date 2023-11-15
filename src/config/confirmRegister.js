@@ -1,8 +1,7 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 const confirmRegisterDriverEmail = (emailDriver) => {
-  const htmlForm =
-    `<!DOCTYPE HTML
+    const htmlForm = `<!DOCTYPE HTML
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
     xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -770,34 +769,34 @@ const confirmRegisterDriverEmail = (emailDriver) => {
     <!--[if IE]></div><![endif]-->
   </body>
   
-  </html>`
+  </html>`;
 
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.MAIL_USERNAME,
-      pass: process.env.MAIL_PASSWORD,
-      clientId: process.env.OAUTH_CLIENTID,
-      clientSecret: process.env.OAUTH_CLIENT_SECRET,
-      refreshToken: process.env.OAUTH_REFRESH_TOKEN
-    }
-  });
-  console.log(emailDriver)
-  let mailOptions = {
-    from: "Navni Service <peakpoon.work@gmail.com>",
-    to: `${emailDriver}`,
-    subject: 'Thank you for your Navni driver register',
-    html: htmlForm
-  };
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            type: "OAuth2",
+            user: process.env.MAIL_USERNAME,
+            pass: process.env.MAIL_PASSWORD,
+            clientId: process.env.OAUTH_CLIENTID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        },
+    });
+    console.log(emailDriver);
+    let mailOptions = {
+        from: "Navni Service <peakpoon.work@gmail.com>",
+        to: `${emailDriver}`,
+        subject: "Thank you for your Navni driver register",
+        html: htmlForm,
+    };
 
-  transporter.sendMail(mailOptions, function (err, data) {
-    if (err) {
-      console.log("Error " + err);
-    } else {
-      console.log("Email sent successfully");
-    }
-  });
-}
+    transporter.sendMail(mailOptions, function (err, data) {
+        if (err) {
+            console.log("Error " + err);
+        } else {
+            console.log("Email sent successfully");
+        }
+    });
+};
 
 module.exports = confirmRegisterDriverEmail;

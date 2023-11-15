@@ -1,40 +1,48 @@
 const prisma = require("../model/prisma");
 const { memberFunction } = require("../controller/userConroller");
+const createError = require("../utils/createError");
 
 exports.createBooking = async (req, res, next) => {
   try {
-    const {
-      
-      pickedUpStationId,
-      dropDownStationId,
-      passenger,
-      price,
-    } = req.body;
+    const { pickedUpStationId, dropDownStationId, passenger, price } = req.body;
 
-    const allMemberInformation = await memberFunction(req, res);
+    const memberInformation = await memberFunction(req, res);
+
+    const bookingItem = await prisma.booking.findMany({
+      where: {
+        memberInformationId: memberInformation.id,
+        OR: [{ status: "COMING" }, { status: "PICKED" }, { status: "WAITING" }],
+      },
+    });
+
+    console.log(bookingItem);
+
+    if (bookingItem[0]) {
+      return next(createError("Cant booking trip"));
+    }
+
     const booking = await prisma.booking.create({
       data: {
-        memberInformationId: allMemberInformation.memberInformation[0].id,
+        memberInformationId: memberInformation.memberInformation[0].id,
         pickedUpStationId: +pickedUpStationId,
         dropDownStationId: +dropDownStationId,
         passenger: +passenger,
         price: +price,
       },
-      
     });
     const pickup = await prisma.subAreaStation.findUnique({
-      where:{
-        id:booking.pickedUpStationId
-      }
-    })
+      where: {
+        id: booking.pickedUpStationId,
+      },
+    });
 
     const drop = await prisma.subAreaStation.findUnique({
-      where:{
-        id:booking.dropDownStationId
-      }
-    })
+      where: {
+        id: booking.dropDownStationId,
+      },
+    });
 
-    res.status(201).json({ message: "Booking Sucessfully" ,booking,pickup,drop});
+    res.status(201).json({ booking, pickup, drop });
   } catch (error) {
     next(error);
   }
@@ -71,6 +79,75 @@ exports.getServiceHistory = async (req, res, next) => {
       },
     });
     res.status(200).json({ booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.cancelBooking = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+    console.log(id);
+    const bookingItem = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (bookingItem.status === "PICKED") {
+      next(createError("Can't cancel this trip", 400));
+    }
+
+    if (bookingItem.status === "WAITING" || bookingItem.status === "COMING") {
+      await prisma.booking.update({
+        data: {
+          status: "CANCEL",
+        },
+        where: {
+          id: bookingItem.id,
+        },
+      });
+    }
+
+    if (
+      bookingItem.status === "COMING" &&
+      bookingItem.carinformationId !== null
+    ) {
+      await prisma.carinformation.update({
+        data: {
+          quantity: {
+            increment: bookingItem.passenger,
+          },
+        },
+        where: {
+          id: bookingItem.carinformationId,
+        },
+      });
+    }
+
+    res.status(200).json(bookingItem);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBookingForUser = async (req, res, next) => {
+  try {
+    const memberInformation = await memberFunction(req, res);
+
+    const bookingItem = await prisma.booking.findMany({
+      where: {
+        memberInformationId: memberInformation.id,
+        OR: [{ status: "COMING" }, { status: "PICKED" }, { status: "WAITING" }],
+      },
+      include: {
+        dropDownStation: true,
+        pickedUpStation: true,
+        carInformation: true,
+      },
+    });
+
+    res.status(200).json(bookingItem);
   } catch (error) {
     next(error);
   }

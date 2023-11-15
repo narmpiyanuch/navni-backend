@@ -1,9 +1,36 @@
+const chalk = require("chalk");
 const createError = require("../utils/createError");
 const prisma = require("../model/prisma");
 
-exports.useSocket = (io) => {
-  // const onlineUser = [];
+const onlineDriver = [];
 
+// exports.testIoMiddleWare = (io) => {
+//     io.use((socket, next) => {
+//         if (socket.handshake.auth.user.role === "USER") {
+//             const driverId = socket.handshake.auth.user.id;
+
+//             if (!driverId) {
+//                 console.log(chalk.red("error connect"));
+//                 return next(createError("invalid username"));
+//             }
+//             socket.driver = socket.handshake.auth.user;
+
+//             onlineDriver.push({
+//                 driverId: socket.driverId,
+//                 socketId: socket.id,
+//             });
+//             console.log(
+//                 chalk.greenBright(
+//                     `online : ${Object.keys(onlineDriver).length}`
+//                 )
+//             );
+//             console.log(chalk.greenBright(`Driver connected ${socket.id}`));
+//         }
+//         next();
+//     });
+// };
+
+exports.useSocket = (io) => {
   io.use((socket, next) => {
     console.log(socket.handshake.auth);
     const userId = socket.handshake.auth.user.id;
