@@ -38,6 +38,8 @@ app.use("/auth", authRoute);
 app.use("/map", mapRoute);
 app.use("/message", messageRoute);
 app.use("/user", authenticateMiddleware, userRoute);
+app.use("/message", messageRoute);
+app.use("/map", mapRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);

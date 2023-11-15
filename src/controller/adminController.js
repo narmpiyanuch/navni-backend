@@ -11,8 +11,17 @@ exports.getAllUser = async (req, res, next) => {
             },
             select: {
                 id: true,
+                email: true,
+                role: true,
                 memberInformation: {
                     select: {
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
+                employeeInformation: {
+                    select: {
+                        id: true,
                         firstName: true,
                         lastName: true,
                     },

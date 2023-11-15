@@ -99,6 +99,11 @@ exports.register = async (req, res, next) => {
       const newUser = await prisma.memberInformation.create({
         data: information,
       });
+      await prisma.chatroom.create({
+        data: {
+          userId: user.id,
+        },
+      });
 
       await prisma.wallet.create({
         data: {
