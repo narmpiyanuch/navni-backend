@@ -11,48 +11,50 @@ datasource db {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  email              String?              @unique
-  password           String?
-  googleId           String?
-  role               RLOE                 @default(USER)
-  MemberInfomation   MemberInfomation[]
-  EmployeeInfomation EmployeeInfomation[]
+  id                  Int                   @id @default(autoincrement())
+  email               String?               @unique
+  password            String?
+  googleId            String?               @map("google_id")
+  role                ROLE                  @default(USER)
+  memberInformation   MemberInformation[]
+  employeeInformation EmployeeInformation[]
+  chatroom            Chatroom?
+  messages            Message[]
 
   @@map("user")
 }
 
-enum RLOE {
+enum ROLE {
   USER
   DRIVER
   ADMIN
 }
 
-model MemberInfomation {
+model MemberInformation {
   id          Int       @id @default(autoincrement())
-  firstName   String
-  lastName    String
+  firstName   String    @map("first_name")
+  lastName    String    @map("last_name")
   phoneNumber String?   @db.VarChar(10)
-  stipeId     String?
+  stipeId     String?   @map("stipe_id")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
   user        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  Wallet      Wallet[]
-  Booking     Booking[]
+  userId      Int       @map("user_id")
+  wallet      Wallet[]
+  booking     Booking[]
 
-  @@map("member_infomation")
+  @@map("member_information")
 }
 
 model Wallet {
-  id                 Int              @id @default(autoincrement())
-  memberInfomation   MemberInfomation @relation(fields: [memberInfomationId], references: [id])
-  memberInfomationId Int
-  amount             Decimal          @default(0.00) @db.Decimal(20, 2)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @default(now())
-  TransactionIn      TransactionIn[]
-  TransactionOut     TransactionOut[]
+  id                  Int               @id @default(autoincrement())
+  memberInformation   MemberInformation @relation(fields: [memberInformationId], references: [id])
+  memberInformationId Int               @map("member_information")
+  amount              Decimal           @default(0.00) @db.Decimal(20, 2)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @default(now())
+  transactionIn       TransactionIn[]
+  transactionOut      TransactionOut[]
 
   @@map("wallet")
 }
@@ -60,18 +62,12 @@ model Wallet {
 model TransactionIn {
   id            Int      @id @default(autoincrement())
   wallet        Wallet   @relation(fields: [walletId], references: [id])
-  walletId      Int
+  walletId      Int      @map("wallet_id")
   price         Decimal  @db.Decimal(20, 2)
-  method        METHOD?
-  transactionId String
+  transactionId String   @map("transaction_in")
   createdAt     DateTime @default(now())
 
   @@map("transaction_in")
-}
-
-enum METHOD {
-  QRCODE
-  CREDIT_CARD
 }
 
 model TransactionOut {
@@ -79,23 +75,41 @@ model TransactionOut {
   price     Decimal  @db.Decimal(20, 2)
   createdAt DateTime @default(now())
   wallet    Wallet   @relation(fields: [walletId], references: [id])
-  walletId  Int
+  walletId  Int      @map("wallet_id")
 
   @@map("transaction_out")
 }
 
-model EmployeeInfomation {
-  id            Int             @id @default(autoincrement())
-  user          User            @relation(fields: [userId], references: [id])
-  userId        Int
-  firstName     String
-  lastName      String
-  idCard        String          @db.VarChar(13)
-  phoneNumber   String          @db.VarChar(10)
+model RegisterEmployeeInformation {
+  id          Int      @id @default(autoincrement())
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  idCard      String   @unique @db.VarChar(13)
+  phoneNumber String   @map("phone_number") @db.VarChar(10)
+  gender      GENDER
+  image       String?
+  email       String?  @unique
+  password    String?
+  createdAt   DateTime @default(now())
+
+  @@map("register_employee_information")
+}
+
+model EmployeeInformation {
+  id            Int              @id @default(autoincrement())
+  user          User             @relation(fields: [userId], references: [id])
+  userId        Int              @map("user_id")
+  firstName     String           @map("first_name")
+  lastName      String           @map("last_name")
+  idCard        String           @unique @map("id_card") @db.VarChar(13)
+  phoneNumber   String           @map("phone_number") @db.VarChar(10)
   gender        GENDER
   image         String?
-  createdAt     DateTime        @default(now())
-  Carinfomation Carinfomation[]
+  status        Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  carinfomation Carinformation[]
+
+  @@map("empolyee_information")
 }
 
 enum GENDER {
@@ -104,49 +118,84 @@ enum GENDER {
   OTHER
 }
 
-model Carinfomation {
-  id                   Int                @id @default(autoincrement())
-  employeeInfomation   EmployeeInfomation @relation(fields: [employeeInfomationId], references: [id])
-  employeeInfomationId Int
-  quantity             Int                @default(6)
-  plateNumber          String
-  createdAt            DateTime           @default(now())
-  Booking              Booking[]
+model Carinformation {
+  id                    Int                 @id @default(autoincrement())
+  employeeInformation   EmployeeInformation @relation(fields: [employeeInformationId], references: [id])
+  employeeInformationId Int                 @map("employee_information_id")
+  quantity              Int                 @default(6)
+  plateNumber           String              @map("plate_number")
+  createdAt             DateTime            @default(now())
+  booking               Booking[]
+
+  @@map("car_information")
 }
 
 model WorkArea {
   id             Int              @id @default(autoincrement())
-  areaName       String
+  areaName       String           @map("area_name")
+  latitude       Decimal
+  longitude      Decimal
+  radius         Decimal
   status         Boolean          @default(true)
   createdAt      DateTime         @default(now())
   SubAreaStation SubAreaStation[]
+
+  @@map("work_area")
 }
 
 model SubAreaStation {
-  id          Int       @id @default(autoincrement())
-  stationName String
-  workArea    WorkArea  @relation(fields: [workAreaId], references: [id])
-  latitude    Decimal
-  longitude   Decimal
-  status      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  Booking     Booking[]
-  workAreaId  Int
+  id              Int       @id @default(autoincrement())
+  stationName     String    @map("station_name")
+  workArea        WorkArea  @relation(fields: [workAreaId], references: [id])
+  latitude        Decimal
+  longitude       Decimal
+  status          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  pickedUpStation Booking[] @relation("pickedUpStation")
+  dropDownStation Booking[] @relation("dropDownStation")
+  workAreaId      Int
+
+  @@map("sub_area_station")
 }
 
 model Booking {
-  id                 Int              @id @default(autoincrement())
-  memberInfomation   MemberInfomation @relation(fields: [memberInfomationId], references: [id])
-  memberInfomationId Int
-  carInfomation      Carinfomation    @relation(fields: [carinfomationId], references: [id])
-  carinfomationId    Int
-  subAreaStation     SubAreaStation   @relation(fields: [subAreaStationId], references: [id])
-  subAreaStationId   Int
-  passenger          Int
-  price              Decimal
-  status             BOOKINGSTATUS
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @default(now())
+  id                  Int               @id @default(autoincrement())
+  memberInformation   MemberInformation @relation(fields: [memberInformationId], references: [id])
+  memberInformationId Int               @map("member_information_id")
+  carInformation      Carinformation?   @relation(fields: [carinformationId], references: [id])
+  carinformationId    Int?              @map("car_information_id")
+  pickedUpStation     SubAreaStation    @relation("pickedUpStation", fields: [pickedUpStationId], references: [id])
+  pickedUpStationId   Int               @map("picked_up_station_id")
+  dropDownStation     SubAreaStation    @relation("dropDownStation", fields: [dropDownStationId], references: [id])
+  dropDownStationId   Int               @map("drop_down_station_id")
+  passenger           Int
+  price               Decimal
+  status              BOOKINGSTATUS     @default(WAITING)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @default(now())
+
+  @@map("booking")
+}
+
+model Chatroom {
+  id       Int       @id @default(autoincrement()) @map("id")
+  userId   Int       @unique
+  user     User      @relation(fields: [userId], references: [id])
+  messages Message[]
+
+  @@map("chatroom")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement()) @map("id")
+  chatroomId Int
+  senderId   Int
+  message    String   @db.LongText
+  sendDate   DateTime
+  chatroom   Chatroom @relation(fields: [chatroomId], references: [id])
+  sender     User     @relation(fields: [senderId], references: [id])
+
+  @@map("message")
 }
 
 enum BOOKINGSTATUS {
