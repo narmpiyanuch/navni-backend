@@ -28,12 +28,6 @@ exports.getAllUser = async (req, res, next) => {
         },
       },
     });
-    // const data = {
-    //   id: allUser[0].id,
-    //   firstName: allUser[0].memberInformation,
-    //   lastName: allUser[0].memberInformation,
-    // };
-    // console.log(allUser[0].id);
     res.status(200).json(allUser);
   } catch (error) {
     next(error);
