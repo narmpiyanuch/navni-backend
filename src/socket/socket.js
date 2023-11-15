@@ -1,6 +1,4 @@
 const createError = require("../utils/createError");
-// const { PrismaClient } = require("@prisma/client");
-// const prisma = new PrismaClient();
 const prisma = require("../model/prisma");
 
 exports.useSocket = (io) => {
@@ -8,23 +6,12 @@ exports.useSocket = (io) => {
 
   io.use((socket, next) => {
     console.log(socket.handshake.auth);
-    // if (socket.handshake.auth.user.role === "USER") {
     const userId = socket.handshake.auth.user.id;
 
     if (!userId) {
       console.log("error connect");
       return next(createError("invalid username"));
     }
-    // socket.userId = userId;
-    // socket.role = socket.handshake.auth.user.role;
-
-    // onlineUser.push({
-    //   userId: socket.userId,
-    //   socketId: socket.id,
-    // });
-    // console.log(`online : ${Object.keys(onlineUser).length}`);
-    // console.log(`User connected ${socket.id}`);
-    // }
     socket.userId = socket.handshake.auth.user.id;
     socket.role = socket.handshake.auth.user.role;
     next();
@@ -34,11 +21,9 @@ exports.useSocket = (io) => {
     console.log("connected: " + socket.id);
 
     socket.on("join_room", async (data) => {
-      // const { senderId } = data;
-      // console.log("join_room " + senderId);
-
       if (socket.role !== "ADMIN") {
         // Check if the sender is a valid user
+        console.log(socket);
         const user = await prisma.user.findUnique({
           where: {
             id: socket.userId,
@@ -50,35 +35,20 @@ exports.useSocket = (io) => {
         if (!user) {
           return;
         }
+        console.log(user);
         //   Find or create a chat room for the user and all admins
         let room = await prisma.chatroom.findFirst({
           where: {
             userId: user.id,
           },
         });
+        console.log("joined", room.id);
         socket.join(room.id);
-
-        // Fetch and send previous chat messages for the room
-        // const allChat = await prisma.message.findMany({
-        //   where: {
-        //     chatroomId: room.id,
-        //   },
-        //   include: {
-        //     sender: true,
-        //   },
-        // });
-        // io.to(room.id).emit(`room_id`, { id: room.id });
-        // io.to(room.id).emit(`all_chat`, { allChat });
       }
       if (socket.role === "ADMIN") {
         const chatRooms = await prisma.chatroom.findMany({});
         socket.join(chatRooms.map((c) => c.id));
       }
-
-      // //   Get a list of all admins
-      // const receiverAdmins = await prisma.user.findMany({
-      //   where: { role: "ADMIN" },
-      // });
     });
 
     socket.on("send_message", async (data) => {
@@ -89,8 +59,8 @@ exports.useSocket = (io) => {
           userId,
         },
       });
+      console.log(room);
       if (!room) {
-        console.log(room);
         return;
       }
 
@@ -106,11 +76,11 @@ exports.useSocket = (io) => {
           sender: true,
         },
       });
-      console.log(io.sockets.adapter.rooms);
+      // console.log(io.sockets.adapter.rooms);
       //   Broadcast the message to the room
       io.to(room.id).emit(`new_message`, newMessage);
+      io.to(room.id).emit(`notification`, senderId);
     });
-
     socket.on("disconnect", () => {
       console.log(`${socket.id} Disconnected`);
     });
