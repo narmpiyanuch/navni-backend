@@ -15,7 +15,6 @@ const paymentRoute = require("./routes/paymentRoute");
 const bookingRoute = require("./routes/bookingRoute");
 const driverRoute = require("./routes/driverRoute");
 
-
 const checkAdminMiddleware = require("./middleWare/roleIdentifierMiddleware");
 const errorMiddleware = require("./middleWare/errorMiddleware");
 const notFoundMiddleware = require("./middleWare/notFoundMiddleware");
@@ -42,6 +41,8 @@ app.use("/auth", authRoute);
 app.use("/map", mapRoute);
 app.use("/message", messageRoute);
 app.use("/user", authenticateMiddleware, userRoute);
+app.use("/message", messageRoute);
+app.use("/map", mapRoute);
 app.use("/payment", authenticateMiddleware, paymentRoute);
 app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);

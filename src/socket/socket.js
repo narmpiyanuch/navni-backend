@@ -1,6 +1,7 @@
 const createError = require("../utils/createError");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+// const { PrismaClient } = require("@prisma/client");
+// const prisma = new PrismaClient();
+const prisma = require("../model/prisma");
 
 exports.useSocket = (io) => {
   // const onlineUser = [];
@@ -36,10 +37,15 @@ exports.useSocket = (io) => {
       // const { senderId } = data;
       // console.log("join_room " + senderId);
 
-      if (socket.role === "USER") {
+      if (socket.role !== "ADMIN") {
         // Check if the sender is a valid user
         const user = await prisma.user.findUnique({
-          where: { id: socket.userId, role: "USER" },
+          where: {
+            id: socket.userId,
+            role: {
+              not: "ADMIN",
+            },
+          },
         });
         if (!user) {
           return;
@@ -50,13 +56,6 @@ exports.useSocket = (io) => {
             userId: user.id,
           },
         });
-        if (!room) {
-          room = await prisma.chatroom.create({
-            data: {
-              userId: user.id,
-            },
-          });
-        }
         socket.join(room.id);
 
         // Fetch and send previous chat messages for the room
