@@ -82,6 +82,11 @@ exports.useSocket = (io) => {
       io.to(room.id).emit(`new_message`, newMessage);
       io.to(room.id).emit(`notification`, senderId);
     });
+
+    socket.on("send_bookingRequest", async (data) => {
+      console.log("send_bookingRequest", data);
+    });
+
     socket.on("disconnect", () => {
       console.log(`${socket.id} Disconnected`);
     });
