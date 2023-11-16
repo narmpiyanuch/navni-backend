@@ -438,7 +438,7 @@ exports.getBookingItemWithComing = async (req, res, next) => {
     const bookingItem = await prisma.booking.findMany({
       where: {
         carinformationId: carInfomation.id,
-        status: "COMING",
+        OR: [{ status: "COMING" }, { status: "PICKED" }],
       },
       include: {
         dropDownStation: true,
@@ -449,6 +449,20 @@ exports.getBookingItemWithComing = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const getBookingItemWithStatus = async (status, carInfomation) => {
+  const bookingItem = await prisma.booking.findMany({
+    where: {
+      carinformationId: carInfomation.id,
+      status: status,
+    },
+    include: {
+      dropDownStation: true,
+      pickedUpStation: true,
+    },
+  });
+  return bookingItem;
 };
 
 exports.getBookingItemWithPicked = async (req, res, next) => {
@@ -459,18 +473,25 @@ exports.getBookingItemWithPicked = async (req, res, next) => {
       where: { employeeInformationId: driver.employeeInformation[0].id },
     });
 
-    const bookingItem = await prisma.booking.findMany({
-      where: {
-        carinformationId: carInfomation.id,
-        status: "PICKED",
-      },
-      include: {
-        dropDownStation: true,
-        pickedUpStation: true,
-      },
-    });
+    const bookingItem = await getBookingItemWithStatus("PICKED", carInfomation);
+    console.log(bookingItem);
     res.status(200).json(bookingItem);
   } catch (error) {
     next(error);
   }
 };
+
+// exports.getBookingItemWithPickedStatus = async (req, res, next) => {
+//   try {
+//     const driver = await employeeFunction(req, res);
+
+//     const [carInfomation] = await prisma.carinformation.findMany({
+//       where: { employeeInformationId: driver.employeeInformation[0].id },
+//     });
+
+//     const bookingItem = getBookingItemWithStatus("PICKED",carInfomation)
+//     res.status(200).json(bookingItem);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
