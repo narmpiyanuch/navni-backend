@@ -495,3 +495,19 @@ exports.getBookingItemWithPicked = async (req, res, next) => {
 //     next(error);
 //   }
 // };
+
+exports.rejectDriverRegister = async (req,res,next)=>{
+  try {
+    const {body:{id}}=req
+
+    const rejectDriver = await prisma.registerEmployeeInformation.deleteMany({
+      where:{id}
+    })
+
+    console.log(rejectDriver)
+
+    res.status(200).json({message:"delete Complete"})
+  } catch (error) {
+    next(error)
+  }
+}
