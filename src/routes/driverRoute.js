@@ -37,6 +37,7 @@ router.get(
   authenticateMiddleware,
   getBookingItemWithPicked
 );
+
 router.patch("/accept-booking", authenticateMiddleware, acceptBooking);
 router.patch("/pickup-user", authenticateMiddleware, pickupUser);
 router.patch("/dropoff-user", authenticateMiddleware, dropOffUser);
