@@ -45,9 +45,7 @@ app.use("/booking", authenticateMiddleware, bookingRoute);
 app.use("/driver", driverRoute);
 app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
 
-// useSocket(io);
 useSocket(io);
-// testIoMiddleWare(io);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
