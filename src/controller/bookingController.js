@@ -6,43 +6,34 @@ exports.createBooking = async (req, res, next) => {
   try {
     const { pickedUpStationId, dropDownStationId, passenger, price } = req.body;
 
-    const memberInformation = await memberFunction(req, res);
+    const memberInfor = await memberFunction(req, res);
 
     const bookingItem = await prisma.booking.findMany({
       where: {
-        memberInformationId: memberInformation.id,
+        memberInformationId: memberInfor.memberInformation[0].id,
         OR: [{ status: "COMING" }, { status: "PICKED" }, { status: "WAITING" }],
       },
     });
 
-    console.log(bookingItem);
-
     if (bookingItem[0]) {
-      return next(createError("Cant booking trip"));
+      return next(createError("Cant booking trip", 403));
     }
 
     const booking = await prisma.booking.create({
       data: {
-        memberInformationId: memberInformation.memberInformation[0].id,
+        memberInformationId: memberInfor.memberInformation[0].id,
         pickedUpStationId: +pickedUpStationId,
         dropDownStationId: +dropDownStationId,
         passenger: +passenger,
         price: +price,
       },
-    });
-    const pickup = await prisma.subAreaStation.findUnique({
-      where: {
-        id: booking.pickedUpStationId,
+      include: {
+        dropDownStation: true,
+        pickedUpStation: true,
       },
     });
 
-    const drop = await prisma.subAreaStation.findUnique({
-      where: {
-        id: booking.dropDownStationId,
-      },
-    });
-
-    res.status(201).json({ booking, pickup, drop });
+    res.status(201).json(booking);
   } catch (error) {
     next(error);
   }
@@ -133,11 +124,11 @@ exports.cancelBooking = async (req, res, next) => {
 
 exports.getBookingForUser = async (req, res, next) => {
   try {
-    const memberInformation = await memberFunction(req, res);
+    const { memberInformation } = await memberFunction(req, res);
 
     const bookingItem = await prisma.booking.findMany({
       where: {
-        memberInformationId: memberInformation.id,
+        memberInformationId: memberInformation[0].id,
         OR: [{ status: "COMING" }, { status: "PICKED" }, { status: "WAITING" }],
       },
       include: {

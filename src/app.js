@@ -28,10 +28,10 @@ app.use(express.json());
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    },
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use("/auth", authRoute);
@@ -46,7 +46,7 @@ app.use("/driver", driverRoute);
 app.use("/admin", authenticateMiddleware, checkAdminMiddleware, adminRoute);
 
 // useSocket(io);
-// useSocket(io);
+useSocket(io);
 // testIoMiddleWare(io);
 
 app.use(notFoundMiddleware);
