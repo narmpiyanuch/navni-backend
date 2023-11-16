@@ -330,7 +330,7 @@ exports.acceptBooking = async (req, res, next) => {
 
     const newBookingItem = await prisma.booking.update({
       data: {
-        carinformationId: driver.employeeInformation[0].id,
+        carinformationId: carInformation.id,
         status: "COMING",
       },
       where: {
@@ -345,7 +345,7 @@ exports.acceptBooking = async (req, res, next) => {
         },
       },
       where: {
-        id: driver.employeeInformation[0].id,
+        id: carInformation.id,
       },
     });
 
@@ -418,7 +418,7 @@ exports.dropOffUser = async (req, res, next) => {
         },
       },
       where: {
-        id: driver.employeeInformation[0].id,
+        id: bookingItem.carinformationId,
       },
     });
     res.status(200).json({ message: "Trip clear" });
