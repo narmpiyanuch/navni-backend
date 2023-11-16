@@ -19,6 +19,9 @@ exports.useSocket = (io) => {
       if (socket.role === "DRIVER") {
         socket.join("DRIVER");
       }
+      if (socket.role === "USER") {
+        socket.join("USER");
+      }
 
       if (socket.role !== "ADMIN") {
         const user = await prisma.user.findUnique({
@@ -75,16 +78,38 @@ exports.useSocket = (io) => {
     });
 
     socket.on("send_bookingRequest", async (data) => {
-      console.log("send_bookingRequest", data);
-      const { passenger } = data;
+      console.log(data);
       const driver = await prisma.carinformation.findMany({
         where: {
           quantity: {
-            gte: passenger,
+            gte: data?.passenger,
           },
         },
       });
-      io.to("DRIVER").emit("receive_requestBooking", driver);
+      io.to("DRIVER").emit("receive_requestBooking", { data, driver });
+    });
+
+    socket.on("cancel_requestBooking", () => {
+      io.to("DRIVER").emit("cancel_requestBooking");
+    });
+
+    socket.on("accept_requestBooking", () => {
+      io.to("USER").emit("update_status");
+    });
+
+    socket.on("confirm_pickup", () => {
+      io.to("USER").emit("changing_status");
+    });
+
+    socket.on("mission_completed", async (data) => {
+      const memberInformation = data;
+      console.log(data);
+      const memberInfor = await prisma.memberInformation.findFirst({
+        where: {
+          id: data.memberInformationId,
+        },
+      });
+      io.to("USER").emit("take_me_home", memberInfor);
     });
 
     socket.on("disconnect", () => {
